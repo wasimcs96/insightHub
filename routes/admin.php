@@ -1119,3 +1119,10 @@ if (env('APP_ENV') != 'production') {
 //     Route::get('pricing', [PricingController::class, 'index'])->name('pricing');
 //     Route::get('features', [FeaturesController::class, 'index'])->name('features');
 // });
+
+// Tenant Provisioning Routes
+Route::prefix('tenant-provisioning')->name('tenant.provisioning.')->group(function () {
+    Route::post('/', [App\Http\Controllers\Admin\TenantProvisioningController::class, 'provision'])->name('provision');
+    Route::get('/plans', [App\Http\Controllers\Admin\TenantProvisioningController::class, 'getAvailablePlans'])->name('plans');
+    Route::get('/parent-tenants', [App\Http\Controllers\Admin\TenantProvisioningController::class, 'getParentTenants'])->name('parent-tenants');
+});
