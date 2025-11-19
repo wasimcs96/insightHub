@@ -1,0 +1,1253 @@
+ <div id="joblevel">
+     <!-- ===================== HTML ===================== -->
+         <form id="matchForm" class="bottom-filter w-100 form-group">
+
+             <!-- 1) Company/Division -->
+
+             <div class="w-100">
+                 <label for="business_unit_id" class="fw-semibold fs-6 mb-2">Business Unit</label>
+                 <select id="business_unit_id" class="form-select" data-placeholder="Select Business Unit">
+                     <option value="">Select Business Unit</option>
+                     <!-- These options will be injected by JS -->
+                 </select>
+             </div>
+
+             <div class="w-100">
+                 <label for="sector" class="fw-semibold fs-6 mb-2">Company/Division</label>
+                 <select id="sector" class="form-select" data-placeholder="Select Company/Division" disabled>
+                     <option value="">Select Company/Division</option>
+                     <!-- These options will be injected by JS -->
+                 </select>
+             </div>
+
+             <!-- 2) Department (loaded based on group) -->
+             <div class="w-100">
+                 <label for="track" class="fw-semibold fs-6 mb-2">Department</label>
+                 <select id="track" class="form-select" disabled>
+                     <option value="">Select Department</option>
+                     <!-- These options will be injected by JS once a group is chosen -->
+                 </select>
+             </div>
+
+         </form>
+     <div id="nocontent_alert">
+         <div class="alert alert-warning alert-dismissible fade show " id="job_level_alert" role="alert">
+             <iconify-icon icon="mingcute:warning-line" width="24" height="24"
+                 style="color: #F7941C"></iconify-icon>
+             Please select a Company/Division and a Department from the dropdowns above to view the skills matrix.
+
+         </div>
+     </div>
+     <div id="message_alert">
+
+     </div>
+
+     <div class=" align-items-center d-flex justify-content-between" id="statics-divv" style="display: none">
+         <p class="mb-7"><span id="skills-count">Displaying 10 skill columns. </span> <span id="profiles-count">Showing
+                 3 of 3 job positions for selected Department and Company/Division.</span></p>
+
+         <button class="approve-skill-job-btn border-0" id="approve-skill-job-btn">
+             <span id="approve-skill-job-btn-text">Approve Selected <span>(0)</span></span> {{-- add id="add-skill-btn-text" if need to make the category naem dynamic --}}
+         </button>
+
+     </div>
+     <!-- 3) Table of Job Profiles for the selected Department -->
+     <div id="profiles-container" class="mt-4 table-container" style="display: none; overflow: scroll;">
+         <table class="table table-bordered" id="profiles-table" style="table-layout: auto;">
+             <thead>
+                 <tr>
+                     <th>
+                         <div class="d-flex align-items-center justify-content-center" style="margin-left: 11px;">
+                             <label class="custom-checkbox m-0">
+                                 <input type="checkbox" id="select-all">
+                                 <span class="checkmark"></span>
+                             </label>
+                         </div>
+                     </th>
+                     <th>Job Position</th>
+                     <th>Position Level</th>
+                     {{-- <th>Job Level</th> --}}
+                     <th>Status</th>
+                     <!-- Dynamically inject skills header here -->
+                 </tr>
+             </thead>
+             <tbody>
+                 <!-- Rows of job profiles will be injected here by JS -->
+             </tbody>
+         </table>
+     </div>
+
+     <p class="m-0 align-items-center justify-content-center gap-3 scroll-text mt-8" style="display: none"
+         id="scrollText">Scroll right to view more skills <iconify-icon icon="bi:arrow-right" width="20"
+             height="20"></iconify-icon></p>
+ </div>
+ <!-- Edit Skill Modal -->
+ <div class="modal fade" id="editSkillModal" tabindex="-1" aria-labelledby="editSkillModalLabel" aria-hidden="true">
+     <div class="modal-dialog modal-dialog-centered">
+         <div class="modal-content">
+             <div class="modal-header border-0">
+                 <h5 class="modal-title fw-semibold" id="editSkillModalLabel">Edit Skill: <span
+                         >Access Control Management</span></h5>
+                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+             </div>
+
+             <div class="modal-body">
+                 <p class="mb-7">For Job Position: <strong id="modal-profile-name">Manager, Security</strong></p>
+                 <input type="hidden" value="" id="modal-pivot-id" />
+                 <input type="hidden" value="" id="modal-skill-id" />
+                 <input type="hidden" value="" id="modal-job-id" />
+                 <input type="hidden" value="" id="modal-skill-name" />
+                 <!-- Proficiency Level -->
+                 <div class="mb-7">
+                     <label class="form-label fw-medium">Select Proficiency Level</label>
+                     <div class="d-flex gap-2 justify-content-center">
+                         <!-- Levels 1–6 -->
+                         <button type="button" class="level-btn" data-level="1">1</button>
+                         <button type="button" class="level-btn" data-level="2">2</button>
+                         <button type="button" class="level-btn" data-level="3">3</button>
+                         <button type="button" class="level-btn" data-level="4">4</button>
+                         <button type="button" class="level-btn" data-level="5">5</button>
+                         <button type="button" class="level-btn" data-level="6">6</button>
+                     </div>
+                 </div>
+
+                 <!-- Level Description -->
+                 <div class="mb-4">
+                     <label class="form-label">Level Description</label>
+                     <p class="mb-0" id="level-description">
+                         Advanced proficiency. Can handle complex tasks and situations. Innovates and optimizes
+                         processes. Seen as a subject matter expert.
+                     </p>
+                 </div>
+             </div>
+
+             <div class="modal-footer border-0 pt-0  edit-footer-btn" id="edit-footer-btn">
+                 <button type="button" class="orange-outline flex-none-custom" id="removeSkillBtn">Remove Skill</button>
+                 <div>
+                     <button type="button" class="grey-outline" data-bs-dismiss="modal">Cancel</button>
+                     <button type="button" class="orange-fill" id="saveSkillBtn">Save Changes</button>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+
+ <!-- Confirmation Modal -->
+
+  <div class="modal fade" id="deleteProfileSkillLvlModal" tabindex="-1" aria-labelledby="DeleteTechnicalSkillLabel"
+     aria-hidden="true">
+     <div class="modal-dialog modal-dialog-centered">
+         <div class="modal-content">
+             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                 style="position: absolute; right: 15px; top: 10px; z-index: 1;"></button>
+             <div class="modal-body text-center pt-4">
+                 <iconify-icon icon="ep:warning" width="70" height="70"
+                     style="color: #FABB6E;"></iconify-icon>
+                 <h4 class="my-5">Delete Technical Skill?</h4>
+
+                 <p class="mx-12 my-5 para">Are you sure you want to delete the technical skill, <b
+                         id="deleteSkillName">Skill Name</b>?<br><br> This will remove this skill and its proficiency
+                     data from the associated job position, <b id="skillDeleteJobProfileName"></b>.This action cannot be
+                     undone.</p>
+                 {{-- <div class="bg-modal-content">
+                     <p class="m-0" id="affectedJobList">
+                 </div> --}}
+                 <div class="d-flex align-items-center justify-content-center gap-2">
+                     <button class="btn btn-outline m-0" data-bs-dismiss="modal" id="showeditSkillModal">Discard</button>
+
+                     <button class="btn btn-danger text-white m-0" id="deleteProfileSkillLvl"
+                         style="background: #F7941C;">Confirm</button>
+
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+
+
+ {{-- Delete Skill Modal start --}}
+ <div class="modal fade" id="DeleteJobLevelTechnicalSkillModal" tabindex="-1"
+     aria-labelledby="DeleteTechnicalSkillLabel" aria-hidden="true">
+     <div class="modal-dialog modal-dialog-centered">
+         <div class="modal-content">
+             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                 style="position: absolute; right: 15px; top: 10px; z-index: 1;"></button>
+             <div class="modal-body text-center pt-4">
+                 <iconify-icon icon="ep:warning" width="70" height="70"
+                     style="color: #FABB6E;"></iconify-icon>
+                 <h4 class="my-5">Delete Skill Column?</h4>
+
+                 <p class="mx-12 my-5 para"> Are you sure you want to delete the skill column <b id="skillToDeleteName"></b>?  <br>This will remove this skill and its proficiency data. This action cannot be undone.</p>
+
+                 {{-- <div class="bg-modal-content">
+                     <p class="m-0" id="affectedJobList">
+                 </div> --}}
+                 <div class="d-flex align-items-center justify-content-center gap-2">
+                     <button class="btn btn-outline m-0" data-bs-dismiss="modal">Discard</button>
+
+                     <button class="btn btn-danger text-white m-0" id="confirmDeleteSkillBtn"
+                         style="background: #F7941C;">Confirm</button>
+
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+ {{-- Delete Skill Modal End --}}
+
+  <!-- Confirmation Modal -->
+ <div class="modal fade" id="approveConfirmationModal" tabindex="-1" aria-labelledby="EditTsfromMSLLabel"
+     aria-hidden="true">
+     <div class="modal-dialog modal-dialog-centered">
+         <div class="modal-content">
+             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                 style=" position: absolute; right: 15px; top: 10px; z-index: 1;"></button>
+             <div class="modal-body text-center pt-4">
+                 <iconify-icon icon="ep:warning" width="70" height="70"
+                     style="color: #FABB6E;"></iconify-icon>
+                 <h4 class="my-5">Approve Job Position(s)?</h4>
+                 <p class="mx-10 my-5">You are about to approve the selected job position(s). By<br> approving the JD(s), you acknowledge that the content is <br> finalised and ready for internal reference. <br><br>
+                     Are you sure you want to proceed?</p>
+                 <div class="d-flex align-items-center justify-content-center gap-2">
+                     <button class="btn btn-outline m-0" data-bs-dismiss="modal">Cancel</button>
+                     <button id="confirmApproveBtn" class="btn btn-apply text-white m-0"
+                         style="background: #F7941C;">Confirm</button>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+{{-- Confirmation Modal --}}
+
+ <script>
+     document.addEventListener('DOMContentLoaded', function() {
+         const sectorSelect = document.getElementById('sector');
+         const trackSelect = document.getElementById('track');
+         const BusinessUnitSelect = document.getElementById('business_unit_id');
+
+         const profilesContainer = document.getElementById('profiles-container');
+         const nocontentalert = document.getElementById('nocontent_alert');
+         const jobLevelAlert = document.getElementById('job_level_alert');
+         const skillStaticsDiv = document.getElementById('statics-divv');
+         const addjobfamilytechskill = document.getElementById('AddJobFamilySKill');
+         const messageAlert = document.getElementById('message_alert');
+
+         const profilesTableBody = document.querySelector('#profiles-table tbody');
+         const profilesHeaderRow = document.querySelector('#profiles-table thead tr');
+         const skillsCountElement = document.getElementById('skills-count');
+         const profilesCountElement = document.getElementById('profiles-count');
+         const selectAllCheckbox = document.getElementById('select-all');
+         const approveButtonText = document.getElementById('approve-skill-job-btn-text');
+         const approveButton = document.getElementById('approve-skill-job-btn');
+         const scrollText = document.getElementById('scrollText');
+
+         let allSkills = [];
+         let dataProfile = [];
+         let currentSkillId = null;
+         let newlyAddSkill = null;
+
+         // 1) Fetch and populate “Job Family Group” (sector)
+         updateApproveButton();
+
+         function updateCounts(allSkills, profiles) {
+             const skillColumnsCount = allSkills.length; // Number of skill columns
+             const jobProfilesCount = profiles.length; // Number of job profiles
+
+             // Update the displayed counts in the page
+             if (skillsCountElement) {
+                 skillsCountElement.textContent =
+                     `Displaying ${skillColumnsCount} skill columns. `; // Update skill columns count
+             }
+             if (profilesCountElement) {
+                 profilesCountElement.textContent =
+                     `Showing ${jobProfilesCount} of ${jobProfilesCount} job positions for selected Department and Company/Division.`; // Update job profiles count
+             }
+         }
+
+          function updateApproveButton() {
+             const checkedCheckboxes = profilesTableBody.querySelectorAll(
+                 'input[type="checkbox"]:checked:not(:disabled)');
+             const selectedCount = checkedCheckboxes.length;
+             console.log('texttttttttttttttttttttttttttttttttttttttttt', selectedCount, approveButtonText);
+             approveButtonText.textContent = `Approve Selected (${selectedCount})`;
+
+             if (selectedCount > 0) {
+                 approveButtonText.textContent = `Approve Selected (${selectedCount})`;
+                 approveButton.style.display = 'inline-block'; // Show the button
+             } else {
+                 approveButton.style.display = 'none'; // Hide the button if no checkboxes are selected
+             }
+
+         }
+
+         // Update the "Select All" checkbox based on the individual checkboxes
+         function updateSelectAllCheckbox() {
+             const allCheckboxes = profilesTableBody.querySelectorAll('input[type="checkbox"]:not(:disabled)');
+             const checkedCheckboxes = profilesTableBody.querySelectorAll(
+                 'input[type="checkbox"]:checked:not(:disabled)');
+             selectAllCheckbox.checked = allCheckboxes.length === checkedCheckboxes.length;
+             selectAllCheckbox.indeterminate = checkedCheckboxes.length > 0 && checkedCheckboxes.length <
+                 allCheckboxes.length;
+         }
+
+         // Toggle checkbox selection for all
+         selectAllCheckbox.addEventListener('change', function() {
+             const checkboxes = profilesTableBody.querySelectorAll(
+                 'input[type="checkbox"]:not(:disabled)');
+             checkboxes.forEach(checkbox => {
+                 checkbox.checked = selectAllCheckbox.checked;
+             });
+             updateApproveButton();
+         });
+
+         // Handle individual checkbox selection
+         profilesTableBody.addEventListener('change', function(e) {
+             if (e.target && e.target.type === 'checkbox' && !e.target.disabled) {
+                 updateSelectAllCheckbox();
+                 updateApproveButton();
+             }
+         });
+
+           fetch('/admin/ajax/business-unit')
+                 .then(res => res.json())
+                 .then(data => {
+                    console.log(data);
+                     BusinessUnitSelect.innerHTML = '<option value="">Select Business Unit</option>';
+                     (data || []).forEach(group => {
+                         const opt = document.createElement('option');
+                         opt.value = group.id;
+                         opt.textContent = group.name;
+                         BusinessUnitSelect.append(opt);
+                     });
+                 })
+                 .catch(err => {
+                     console.error('Failed to load Company/Division:', err);
+                     hideOverlay();
+                 });
+
+         BusinessUnitSelect.addEventListener('change', function() {
+             const businessUnitId = this.value;
+
+             // Reset and disable trackSelect until a valid group is chosen
+             sectorSelect.innerHTML = '<option value="">Select Company/Division</option>';
+             sectorSelect.disabled = true;
+
+             // Hide and clear any existing profiles table
+             profilesContainer.style.display = 'none';
+             profilesTableBody.innerHTML = '';
+
+             if (!businessUnitId) {
+                 // No group chosen → leave Department disabled
+                 return;
+             }
+
+             sectorSelect.disabled = false;
+             showOverlay();
+             fetch(`/admin/ajax/divisions/${businessUnitId}`)
+                 .then(res => res.json())
+                 .then(data => {
+                     sectorSelect.innerHTML = '<option value="">Select Company/Division</option>';
+                     (data || []).forEach(group => {
+                         const opt = document.createElement('option');
+                         opt.value = group.id;
+                         opt.textContent = group.head_of_division;
+                         sectorSelect.append(opt);
+                     });
+                     hideOverlay();
+
+                 })
+                 .catch(err => {
+                     console.error('Failed to load Company/Division:', err);
+                     hideOverlay();
+                 });
+         });
+
+
+         // 2) When a group is selected, fetch its Job Families
+         sectorSelect.addEventListener('change', function() {
+             const groupId = this.value;
+
+             // Reset and disable trackSelect until a valid group is chosen
+             trackSelect.innerHTML = '<option value="">Select Department</option>';
+             trackSelect.disabled = true;
+
+             // Hide and clear any existing profiles table
+             profilesContainer.style.display = 'none';
+             profilesTableBody.innerHTML = '';
+
+             if (!groupId) {
+                 // No group chosen → leave Department disabled
+                 return;
+             }
+
+             trackSelect.disabled = false;
+             showOverlay();
+
+             fetch(`/admin/job-families/${groupId}`)
+                 .then(res => res.json())
+                 .then(data => {
+                    //  console.log('dataaaaaaaaaaaaaaaaaaaaaaaaaa', data);
+                     (data || []).forEach(family => {
+                         const opt = document.createElement('option');
+                         opt.value = family.id;
+                         opt.textContent = family.name;
+                         trackSelect.append(opt);
+                     });
+                     hideOverlay();
+                 })
+                 .catch(err => {
+                     console.error('Failed to load Job Families:', err);
+                     hideOverlay();
+                 })
+                 .finally(() => {
+
+                 });
+         });
+
+         trackSelect.addEventListener('change', function() {
+             const familyId = this.value;
+            //  console.log('trackselecttrigger', familyId);
+             // Clear any existing rows & skill-<th>s
+             profilesTableBody.innerHTML = '';
+             while (profilesHeaderRow.children.length > 4) {
+                 profilesHeaderRow.removeChild(profilesHeaderRow.lastChild);
+             }
+             profilesContainer.style.display = 'none';
+             addjobfamilytechskill.style.display = 'none';
+             skillStaticsDiv.style.display = 'none';
+             scrollText.style.display = 'none';
+             if (!familyId) return;
+
+             showOverlay();
+             fetch(`/admin/get/job-profiles-details/${familyId}`)
+                 .then(res => res.json())
+                 .then(data => {
+                     // data = { allSkills: [ {id,name,level_1_description…}, … ],
+                     //          profiles: [ {profile_id,name,management_level,job_level,skills:{…}}, … ] }
+                     if (!data || !Array.isArray(data.allSkills) || !Array.isArray(data.profiles)) {
+                         console.error('Unexpected JSON format:', data);
+                         return;
+                     }
+                     allSkills = data.allSkills;
+                     dataProfile = data.profiles;
+                     //  console.log('data jobprofile', data)
+                     if (!data.allSkills || data.allSkills.length === 0) {
+                         profilesContainer.style.display = 'none';
+                         //  console.log('in condition');
+                         nocontentalert.innerHTML = `
+                            <div class="alert alert-warning alert-dismissible fade show" id="job_level_alert" style="border-top-left-radius: 0px; border-bottom-left-radius: 0px; border-left: 6px solid; display: flex; align-items: center;" role="alert">
+                                <iconify-icon icon="ic:round-warning" width="24" height="24" class="mr-4"></iconify-icon>
+                                No job positions match the selected criteria.
+                            </div>`;
+
+                     } else {
+                         nocontentalert.innerHTML = '';
+                         addjobfamilytechskill.style.display = 'block';
+                     }
+
+                     //  const allSkills = data.allSkills;
+                     const profiles = data.profiles;
+                     updateCounts(data.allSkills, profiles);
+
+                     data.allSkills.forEach(skill => {
+                         const th = document.createElement('th');
+                         th.classList.add('jobskill-th');
+                         // th.setAttribute("title", skill.name);
+                         th.setAttribute('data-bs-toggle', 'tooltip');
+                         th.setAttribute('data-bs-placement', 'top');
+                         th.setAttribute('data-bs-title', skill.name);
+                         th.setAttribute('skill-name',skill.name);
+                         th.innerHTML = `
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div class="skill-name" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    ${skill.name}
+                                </div>
+                                <div class="th-delete-icon" data-master-skill-id="${skill.id}">
+                                    <iconify-icon icon="ant-design:delete-twotone" width="16" height="16"></iconify-icon>
+                                </div>
+                            </div>
+                        `;
+ 
+                         profilesHeaderRow.appendChild(th);
+                     });
+
+                     const tooltipTriggerList = [].slice.call(document.querySelectorAll(
+                         '[data-bs-toggle="tooltip"]'));
+                     tooltipTriggerList.forEach(function(el) {
+                         new bootstrap.Tooltip(el, {
+                             delay: {
+                                 show: 0,
+                                 hide: 100
+                             } // instant on hover
+                         });
+                     });
+
+
+                     // ─── For each Job Profile, build a <tr> with 3 fixed <td> + N skill-cells ────
+                     profiles.forEach(profile => {
+                         const tr = document.createElement("tr");
+
+                         // Checkbox with Bootstrap .form-check
+                         const tdCheckbox = document.createElement("td");
+                         const checkboxWrapper = document.createElement("div");
+                         checkboxWrapper.classList.add("form-check");
+
+                         const checkbox = document.createElement("input");
+                         checkbox.type = "checkbox";
+                         checkbox.classList.add("form-check-input"); // Bootstrap class
+                         checkbox.value = profile.job_id;
+
+                         if (profile.status === 1) {
+                             checkbox.disabled = true;
+                         }
+
+                         checkboxWrapper.appendChild(checkbox);
+                         tdCheckbox.appendChild(checkboxWrapper);
+                         tr.appendChild(tdCheckbox);
+
+
+                         // Job Profile
+                         const tdName = document.createElement('td');
+                         const anchor = document.createElement('a');
+                         anchor.href = profile.profile_url; // Set the URL to the anchor tag
+                         anchor.textContent = profile
+                             .name; // Set the text content to profile name
+                         anchor.target = "_blank"; // Open link in a new tab
+                         anchor.classList.add(
+                             "text-black"); // Add the 'text-black' class for black text
+                         tdName.appendChild(
+                             anchor); // Append the anchor tag to the table cell
+                         tr.appendChild(tdName);
+
+                         // (2) Position Level
+                         const tdMgmt = document.createElement('td');
+                         tdMgmt.textContent = profile.management_level;
+                         tr.appendChild(tdMgmt);
+
+
+
+                         // Status
+                         const tdStatus = document.createElement("td");
+                         const statusSpan = document.createElement("span");
+
+                         statusSpan.textContent = profile.status ?? "APPROVED";
+                         if (profile.status === 1) {
+                             statusSpan.textContent = "APPROVED";
+                         } else {
+                             statusSpan.textContent = "PENDING";
+
+                         }
+
+                         if (profile.status === 1) {
+                             statusSpan.classList.add("badge-status", "approved");
+                         } else if (profile.status === 2) {
+                             statusSpan.classList.add("badge-status", "pending");
+                         } else {
+                             statusSpan.classList.add("bg-light-secondary", "text-muted");
+                         }
+
+                         tdStatus.appendChild(statusSpan);
+                         tr.appendChild(tdStatus);
+
+                         // Skills
+                         data.allSkills.forEach(skill => {
+                             const td = document.createElement('td');
+
+                             // Check if this profile has that skill (profile.skills is a map)
+                             const skillInfo = profile.skills[skill.id];
+                             //  console.log('skillinfoooooooooooooooo', skillInfo);
+
+
+                             if (skillInfo) {
+                                 td.classList.add(
+                                     'editable-cell'
+                                 ); // <-- Add class for hover styling
+
+                                 td.innerHTML = `
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <small><b>(Level ${skillInfo.level})</b></small>
+                                    <div class="pencil-table-icon" data-job-id="${profile.job_id}" data-skill-id="${skill.id}" data-profile-name="${profile.name}" data-pivot-id="${skillInfo.pivot_id}" data-skill-name="${skill.name}" data-level="${skillInfo.level}" data-description="${skillInfo.description}">
+                                        <iconify-icon icon="heroicons:pencil-square" class="fa-1-5"></iconify-icon>
+                                    </div>
+                                    </div>
+                                    <div class="truncate-3-lines" style="white-space: normal;" title="${skillInfo.description || ''}">
+                                    ${skillInfo.description || ''}
+                                    </div>
+                                `;
+
+                                 td.style.backgroundColor =
+                                     "#E7F4FD"; // light blue background
+                             } else {
+                                 td.classList.add(
+                                     'editable-cell'
+                                 )
+                                 td.innerHTML = `
+                                 <div class="d-flex align-items-center justify-content-between mb-2">
+                                  -
+                                    <div class="pencil-table-icon" data-job-id="${profile.job_id}" data-skill-id="${skill.id}" data-profile-name="${profile.name}" data-pivot-id="0" data-skill-name="${skill.name}" data-level="0" data-description="0">
+                                        <iconify-icon icon="heroicons:pencil-square" class="fa-1-5"></iconify-icon>
+                                    </div>
+                                    </div>
+                                 `;
+                             }
+                             const skillhead = document.querySelector(
+                                 '.skill_header_' + skill.id);
+                             if (!profiles.some(p => p.skills[skill.id])) {
+                                 td.classList.add(
+                                     'no-profile'
+                                 ); // Add a class to highlight this column
+                                 if (skillhead) {
+                                     skillhead.classList.add(
+                                         'no-profile'
+                                     ); // Highlight the corresponding header as well
+                                 }
+                             }
+                             // Otherwise leave the <td> blank
+                             tr.appendChild(td);
+                         });
+
+                         profilesTableBody.appendChild(tr);
+                     });
+
+
+
+                     // Finally, show the table container
+                     if (data.allSkills.length > 0) {
+                         //  console.log('inconditionnnn after table', data.allSkills.length)
+                         profilesContainer.style.display = '';
+                         jobLevelAlert.style.display = 'none';
+                         skillStaticsDiv.style.display = 'flex';
+                         scrollText.style.display = 'flex';
+
+
+                     }
+                     hideOverlay();
+                     console.log('newlyAddSkilllllllllllllllll', newlyAddSkill);
+                     if (newlyAddSkill) {
+                         const newColumn = document.querySelector(
+                             `[data-master-skill-id="${newlyAddSkill}"]`);
+                             console.log('newColummnnnn',newColumn);
+
+                         if (newColumn) {
+                             newColumn.scrollIntoView({
+                                 behavior: 'smooth',
+                                 inline: 'end',
+                                 block: 'nearest'
+                             });
+                         }
+                     }
+                      
+                 })
+                 .catch(err => {
+                     console.error('Failed to load Job Positions + Skills:', err);
+                     hideOverlay();
+                 })
+                 .finally(() => {
+                     //  hideOverlay();
+                 });
+         });
+
+         profilesTableBody.addEventListener('click', function(e) {
+             if (e.target && e.target.closest('.pencil-table-icon')) {
+
+                 const editModal = new bootstrap.Modal(document.getElementById('editSkillModal'));
+                 editModal.show();
+                 const button = e.target.closest('.pencil-table-icon');
+                 const skillId = button.getAttribute('data-skill-id');
+                 const skillName = button.getAttribute('data-skill-name');
+                 const profileName = button.getAttribute('data-profile-name');
+                 const level = button.getAttribute('data-level');
+                 const description = button.getAttribute('data-description');
+                 const pivotId = button.getAttribute('data-pivot-id');
+                 const JobId = button.getAttribute('data-job-id');
+
+
+
+                 currentSkillId = skillId;
+                 // Update modal content
+                 const modalTitle = document.querySelector('#editSkillModalLabel');
+                 const modalSkillName = document.querySelector('#modal-skill-name');
+                 const modalProfileName = document.querySelector('#modal-profile-name');
+                 const modalPivotId = document.querySelector('#modal-pivot-id');
+                 const modalJobId = document.querySelector('#modal-job-id');
+                 const modalSkillId = document.querySelector('#modal-skill-id');
+
+
+
+                 const modalLevelDescription = document.querySelector('#level-description');
+
+
+                 if (pivotId > 0) {
+                     modalTitle.textContent = `Edit Skill: ${skillName}`;
+                     document.getElementById('removeSkillBtn').style.display = 'block';
+                     document.getElementById('edit-footer-btn').style.justifyContent = 'space-between';
+
+                 } else {
+                     modalTitle.textContent = `Create Skill: ${skillName}`;
+                     document.getElementById('removeSkillBtn').style.display = 'none';
+                     document.getElementById('edit-footer-btn').style.justifyContent = 'center';
+
+
+                 }
+                 
+                 modalProfileName.textContent = profileName;
+                 modalSkillName.value = skillName;
+                 modalPivotId.value = pivotId;
+                 modalJobId.value = JobId;
+                 modalSkillId.value = skillId;
+
+
+
+                 // Set the description for the level
+                 modalLevelDescription.textContent = description || 'Please select a proficiency level.';
+
+
+                 const skillData = allSkills.find(skill => skill.id === parseInt(skillId));
+
+                 // Find the levels for the selected skill
+                 const availableLevels = [];
+                 for (let i = 1; i <= 6; i++) {
+                     if (skillData[`level_${i}_description`] && skillData[`level_${i}_description`] !==
+                         "") {
+                         availableLevels.push(i);
+                     }
+                 }
+
+                 const levelButtons = document.querySelectorAll('.level-btn');
+
+                 levelButtons.forEach(btn => {
+                     const level = parseInt(btn.getAttribute('data-level'));
+
+                     // Enable the button if the level exists, else disable it
+                     if (availableLevels.includes(level)) {
+                         btn.disabled = false;
+                         btn.style.display = 'inline-block'; // Show the button
+                     } else {
+                         btn.disabled = true;
+                         btn.style.display = 'none'; // Hide the button
+                     }
+
+                     // Reset active class for all level buttons
+                     btn.classList.remove('active');
+                 });
+                 // Update level buttons in the modal
+                 levelButtons.forEach(btn => {
+                     btn.classList.remove('active'); // Reset active class
+                     if (btn.getAttribute('data-level') == level) {
+                         btn.classList.add('active'); // Set the correct level as active
+                     }
+                 });
+
+                 // Dynamically set the description based on the skill level
+                 //  const skillData = allSkills.find(skill => skill.id === parseInt(skillId));
+                 const levelDescription = skillData[`level_${level}_description`] ||
+                     'Please select a proficiency level.';
+                 document.getElementById('level-description').textContent = levelDescription;
+             }
+         });
+
+         // Level buttons click event to update description dynamically
+         document.getElementById('editSkillModal').addEventListener('click', function(e) {
+             if (e.target && e.target.closest('.level-btn')) {
+                 const levelButton = e.target.closest('.level-btn');
+                 const level = levelButton.getAttribute('data-level');
+                 console.log('Level clicked:', level);
+
+                 // Ensure currentSkillId is not null or undefined
+                 if (!currentSkillId) {
+                     console.error('Current skill ID is not set.');
+                     return;
+                 }
+
+                 // Find the corresponding skill data for currentSkillId
+                 const skillData = allSkills.find(skill => skill.id === parseInt(currentSkillId));
+                 if (!skillData) {
+                     console.error('Skill not found for ID:', currentSkillId);
+                     return;
+                 }
+
+                 // Get the description based on the selected level
+                 const levelDescription = skillData[`level_${level}_description`] ||
+                     'No description available for this level';
+                 console.log('Level description:', levelDescription);
+
+                 // Update the description in the modal
+                 const descriptionElement = document.getElementById('level-description');
+                 if (descriptionElement) {
+                     descriptionElement.textContent = levelDescription;
+                 } else {
+                     console.error('Element with ID "level-description" not found.');
+                 }
+
+                 // Set the active class for the clicked level button
+                 const levelButtons = document.querySelectorAll('.level-btn');
+                 levelButtons.forEach(btn => {
+                     btn.classList.remove('active'); // Reset active class
+                     if (btn.getAttribute('data-level') == level) {
+                         btn.classList.add('active'); // Set the clicked level as active
+                     }
+                 });
+             }
+         });
+
+
+         document.getElementById('saveSkillBtn').addEventListener('click', function() {
+             const selectedLevel = document.querySelector('.level-btn.active')?.getAttribute(
+                 'data-level');
+             const pivotId = document.getElementById('modal-pivot-id').value;
+             const jobId = document.getElementById('modal-job-id').value;
+             //  const skillId = document.getElementById('modal-skill-id').value;
+
+             console.log('ajax caalllllllll', selectedLevel, pivotId)
+             // Check if a level is selected and pivotId exists
+             if (!selectedLevel || !pivotId) {
+                 console.error('Selected level or pivotId is missing');
+                 return;
+             }
+
+             // Prepare data to send via AJAX
+             const data = {
+                 skillId: currentSkillId, // The skill ID of the skill being edited
+                 level: selectedLevel,
+                 pivotId: pivotId,
+                 jobId: jobId,
+                 //  skillId: skillId
+
+             };
+
+             // Send AJAX request (using Fetch API for simplicity)
+             fetch('/admin/company/sector-skills/update-technical-skill-level', {
+                     method: 'POST', // or 'PUT' depending on your API
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': '{{ csrf_token() }}' // If you are using authorization token
+                     },
+                     body: JSON.stringify(data)
+                 })
+                 .then(response => response.json())
+                 .then(responseData => {
+                     console.log('Response:', responseData);
+                     if (responseData.success) {
+                         //  alert('Changes saved successfully!');
+                         // Optionally, close the modal here
+                         messageAlert.innerHTML =
+                             `<x-alert :type="'success'" :message="'${responseData.message}'" />`;
+                         const modal = bootstrap.Modal.getInstance(document.getElementById(
+                             'editSkillModal'));
+                         modal.hide();
+                         const trackSelect = document.getElementById('track');
+
+                         // Trigger the change event on trackSelect
+                         trackSelect.dispatchEvent(new Event('change'));
+                     } else {
+                         alert('Failed to save changes');
+                     }
+                 })
+                 .catch(err => {
+                     console.error('Error during the AJAX request:', err);
+                     alert('An error occurred while saving the changes');
+                 });
+         });
+
+      
+           document.getElementById('removeSkillBtn').addEventListener('click', function() {
+             const skillNameElement = document.getElementById('modal-skill-name');
+             const skillName = skillNameElement.value ? skillNameElement.value : 'Default Skill Name';
+
+             const profileNameElement = document.getElementById('modal-profile-name');
+             const profileName = profileNameElement ? profileNameElement.textContent :
+                 'Default Profile Name';
+
+
+
+             const pivotId = document.getElementById('modal-pivot-id').value;
+
+            //  console.log('Remove Skill button clicked');
+            //  console.log('Skill Name:', skillName, 'pivotId:', pivotId);
+
+             // Check if pivotId exists
+             if (!pivotId) {
+                 console.error('pivotId is missing');
+                 return;
+             }
+
+             // Set the skill name in the delete confirmation modal
+             document.getElementById('deleteSkillName').textContent = skillName;
+             document.getElementById('skillDeleteJobProfileName').textContent = profileName;
+
+
+             // Show the delete confirmation modal
+             const modal = bootstrap.Modal.getInstance(document.getElementById(
+                             'editSkillModal'));
+                         modal.hide();
+
+             const deleteModal = new bootstrap.Modal(document.getElementById(
+                 'deleteProfileSkillLvlModal'));
+             deleteModal.show();
+         });
+
+        document.getElementById('showeditSkillModal').addEventListener('click', function() {
+
+             const modal = bootstrap.Modal.getInstance(document.getElementById('editSkillModal'));
+            modal.show();
+        });
+       
+
+         document.getElementById('deleteProfileSkillLvl').addEventListener('click', function() {
+             const pivotId = document.getElementById('modal-pivot-id').value;
+
+            //  console.log('Remove Skill button clicked');
+            //  console.log('selectedLevel:', selectedLevel, 'pivotId:', pivotId);
+
+             const data = {
+                 skillId: currentSkillId,
+                 pivotId: pivotId,
+                 is_remove: true
+             };
+
+
+             fetch('/admin/company/sector-skills/update-technical-skill-level', {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                     },
+                     body: JSON.stringify(data)
+                 })
+                 .then(response => response.json())
+                 .then(responseData => {
+                     console.log('Responseeeeeeee:', responseData);
+                     if (responseData.success) {
+
+                        //  messageAlert.innerHTML = `
+                        //             <div class="alert alert-success alert-dismissible feedback-message fade show " id="job_level_alert" role="alert" style="display:flex !important;">
+                        //                 <p class="m-0">${responseData.message}</p>
+                        //             <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                        //                 <span aria-hidden="true">&times;</span>
+                        //             </button>
+                        //             </div>
+                        //             `;
+                                    messageAlert.innerHTML =
+                             `<x-alert :type="'success'" :message="'${responseData.message}'" />`;
+                                    
+
+                         const modal = bootstrap.Modal.getInstance(document.getElementById(
+                             'editSkillModal'));
+                         modal.hide();
+                         const modalDelete = bootstrap.Modal.getInstance(document.getElementById(
+                             'deleteProfileSkillLvlModal'));
+                         modalDelete.hide();
+                         const trackSelect = document.getElementById('track');
+
+                         trackSelect.dispatchEvent(new Event('change'));
+
+                     } else {
+                         alert('Failed to remove skill');
+                     }
+                 })
+                 .catch(err => {
+                     console.error('Error during the AJAX request:', err);
+                     alert('An error occurred while removing the skill');
+                 });
+         });
+
+
+        document.getElementById('approve-skill-job-btn-text').addEventListener('click', function() {
+             const selectedCheckboxes = profilesTableBody.querySelectorAll(
+                 'input[type="checkbox"]:checked:not(:disabled)'
+             );
+
+             if (selectedCheckboxes.length === 0) {
+                 alert('Please select at least one job position to approve.');
+                 return;
+             }
+
+             // Store selected values globally
+             selectedValues = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+             // Show the confirmation modal
+             const modal = new bootstrap.Modal(document.getElementById('approveConfirmationModal'));
+             modal.show();
+         });
+
+         document.getElementById('confirmApproveBtn').addEventListener('click', function() {
+             // Close modal
+             const modalEl = document.getElementById('approveConfirmationModal');
+             const modalInstance = bootstrap.Modal.getInstance(modalEl);
+             modalInstance.hide();
+
+             // Perform AJAX request
+             fetch('/admin/company/sector-skills/approve-selected-job-profile', {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                     },
+                     body: JSON.stringify({
+                         selectedValues: selectedValues
+                     })
+                 })
+                 .then(response => {
+                     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                     return response.json();
+                 })
+                 .then(responseData => {
+                     if (responseData.success) {
+                         // alert('Selected skills approved successfully!');
+                         const allCheckboxes = profilesTableBody.querySelectorAll(
+                             'input[type="checkbox"]:not(:disabled)');
+                         allCheckboxes.forEach(checkbox => {
+                             checkbox.checked = false; // Uncheck each checkbox
+                         });
+
+                         // Reset the select all checkbox state
+                         selectAllCheckbox.checked = false;
+                         updateApproveButton();
+                         document.getElementById('track').dispatchEvent(new Event('change'));
+                     } else {
+                         alert('Failed to approve selected skills');
+                     }
+                 })
+                 .catch(err => {
+                     console.error('Error during the AJAX request:', err);
+                     alert('An error occurred while approving the skills');
+                 });
+         });
+
+
+
+
+         const deleteModalEl = document.getElementById('DeleteJobLevelTechnicalSkillModal');
+         const deleteModal = new bootstrap.Modal(deleteModalEl);
+         const skillNameEl = deleteModalEl.querySelector('#skillToDeleteName');
+         const affectedJobsEl = deleteModalEl.querySelector('#affectedJobList');
+         const confirmBtn = deleteModalEl.querySelector('#confirmDeleteSkillBtn');
+
+         const headerRow = document.querySelector('#profiles-table thead tr');
+         headerRow.addEventListener('click', function(e) {
+
+             const btn = e.target.closest('.th-delete-icon');
+             const trackValue = trackSelect.value;
+             //  console.log('trackkkkkkkk',)
+             if (!btn) return;
+             if (!trackValue) return;
+
+             const skillId = btn.getAttribute('data-master-skill-id');
+             const th = btn.closest('th');
+             const skillName = th.getAttribute('skill-name') || `#${skillId}`;
+
+             const assigned = dataProfile.filter(p => p.skills && p.skills[skillId]);
+
+
+             if (assigned.some(p => p.status === 1)) {
+                 nocontentalert.innerHTML = `
+                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    The technical skill '${skillName}' cannot be deleted. It’s linked to approved job position(s). Set the associated profile(s) to ‘Pending’ or remove linked proficiency data to proceed.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    `;
+
+                 return;
+
+             } else {
+                 nocontentalert.innerHTML = '';
+             }
+
+             skillNameEl.textContent = skillName;
+
+            //  if (assigned.length) {
+            //      affectedJobsEl.innerHTML = '<ul>' +
+            //          assigned.map(p => `<li class="list-style-none">${p.name}</li>`).join('') + '</ul>';
+            //  } else {
+            //      affectedJobsEl.innerHTML = '<p>No profiles currently linked.</p>';
+            //  }
+
+             deleteModal.show();
+
+             const confirmMsg = assigned.length ?
+                 `“${skillName}” is PENDING on ${assigned.length} profile(s). Do you really want to delete it?` :
+                 `Do you really want to delete the skill “${skillName}”?`;
+
+             //  if (!confirm(confirmMsg)) return;
+
+             // perform the AJAX delete
+             confirmBtn.onclick = () => {
+                 deleteModal.hide();
+                 const profileIds = assigned.map(p => p.job_id);
+                 const job_family_id = trackValue;
+                 fetch('/admin/sector/skills/company/deleteJobSkills/' + skillId, {
+                         method: 'delete',
+                         headers: {
+                             'Content-Type': 'application/json',
+                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                             'X-Requested-With': 'XMLHttpRequest'
+                         },
+                         body: JSON.stringify({
+                             skillId, // Send the skill ID to delete
+                             profileIds, // Include the profile IDs in the request body
+                             job_family_id,
+                             
+                         })
+                     })
+                     .then(r => r.json())
+                     .then(resp => {
+                         console.log('response', resp);
+                         if (resp.status === 'success') {
+                             
+                                    messageAlert.innerHTML =
+                             `<x-alert :type="'success'" :message="'${resp.message}'" />`;
+                             // remove the column visually
+                             th.remove();
+                             // refresh the table & counts
+                             document.getElementById('track').dispatchEvent(new Event('change'));
+                         } else {
+                             alert(`Failed to delete skill: ${resp.message || 'unknown error'}`);
+                         }
+                     })
+                     .catch(err => {
+                         console.error(err);
+                         alert('Error deleting skill. Check console for details.');
+                     });
+             }
+         });
+
+
+
+         function initSelect2(selector) {
+             const $el = typeof selector === 'string' ? $(selector) : selector;
+
+             $el.select2({
+                 ajax: {
+                     url: '{{ route('admin.technical-skill.search') }}',
+                     dataType: 'json',
+                     delay: 250,
+                     data: function(params) {
+                         return {
+                             q: params.term, // Search term
+                             page: params.page || 1
+                         };
+                     },
+                     processResults: function(data, params) {
+                         params.page = params.page || 1;
+
+                         return {
+                             results: data.results,
+                             pagination: {
+                                 more: data.pagination.more
+                             }
+                         };
+                     },
+                     cache: true
+                 },
+                 templateResult: function(data) {
+                     if (data.loading) return data.text;
+                     const isNewSkill = data.text && data.text.includes('(New Skill)');
+                     return $(` 
+                    <span>${data.text} ${isNewSkill ? '<span class="badge bg-warning text-dark ms-2">New</span>' : ''}</span>
+                `);
+                 },
+                 templateSelection: function(data) {
+                     return data.text;
+                 },
+                 placeholder: 'Search for a skill',
+                 minimumInputLength: 1, // Minimum length to start searching
+                 width: 'resolve',
+                 allowClear: true,
+                 dropdownParent: $('#AddSkillPopup'),
+             });
+         }
+
+         document.getElementById('AddJobFamilySKill').addEventListener('click', function() {
+             const modalEl = document.getElementById('AddSkillPopup');
+             const modal = new bootstrap.Modal(modalEl);
+             modal.show();
+         });
+
+         // Initialize select2 only when modal is fully opened
+         $('#AddSkillPopup').on('shown.bs.modal', function() {
+
+             document.getElementById('add_ts_job_family_group').textContent = sectorSelect
+                 .selectedOptions[0]?.textContent ?? 'Job Family Group';
+             document.getElementById('add_ts_job_family').textContent = trackSelect.selectedOptions[0]
+                 ?.textContent ?? 'Job Family';
+             initSelect2('#selectSkill');
+         });
+
+
+         $('#AddSkillPopup').on('hidden.bs.modal', function() {
+             $('#selectSkill').val(null).trigger('change');
+         });
+
+         $('#proceedAddSkillBtn').on('click', function() {
+             // Get the selected value
+             const selectedSkill = $('#selectSkill').val();
+
+             const currentTrack = trackSelect.value;
+             // Check if a value is selected
+
+             if (!selectedSkill) {
+                 // Show the error message below the select box
+                 $('#selectSkillError').show();
+
+                 // Add red border to the select box
+                 $('#selectSkill').addClass('error');
+
+                 // Prevent form submission or any further action
+                 return;
+             } else {
+                 // Clear the error message and remove red border
+                 $('#selectSkillError').hide();
+                 $('#selectSkill').removeClass('error');
+             }
+
+             // if (selectedSkill) {
+             // AJAX POST request to send the selected value
+             $.ajax({
+                 url: '{{ route('create.job.family.technical.skill') }}', // Backend route to handle the update
+                 type: 'POST',
+                 data: {
+                     skill_id: selectedSkill, // The selected skill ID
+                     track_id: currentTrack,
+                     _token: '{{ csrf_token() }}' // CSRF token for security
+                 },
+                 success: function(response) {
+                     console.log('skilllllladded', response);
+                     if (response.success) {
+                         // alert('Technical skill updated successfully!');
+                         newlyAddSkill = response.skill_id;
+                         $('#AddSkillPopup').modal('hide');
+
+                         messageAlert.innerHTML =
+                             `<x-alert :type="'success'" :message="'${response.message}'" />`;
+
+
+
+                         document.getElementById('track').dispatchEvent(new Event('change'));
+                     } else {
+                         // alert('Error updating technical skill. Please try again.');
+                         document.getElementById('selectSkillError').innerHTML = response
+                             .message;
+
+                         $('#selectSkillError').show();
+                     }
+                 },
+                 error: function() {
+                     alert('An error occurred while updating the technical skill.');
+                 }
+             });
+             // } else {
+             //     alert('Please select a technical skill.');
+             // }
+         });
+
+
+     });
+
+     //  $(document).ready(function() {
+     //      $('.selectSkill').select2({
+
+     //      });
+
+
+     //  })
+ </script>

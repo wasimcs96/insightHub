@@ -1,0 +1,289 @@
+[
+  {
+    "module": "InsightHub",
+    "enabled": true,
+    "sections": [
+      {
+        "name": "Analytics",
+        "enabled": true,
+        "modules": [
+          { "row": "Dashboard", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Chatbot", "permissions": { "all": true, "view": true, "create": true, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Settings",
+        "enabled": true,
+        "modules": [
+          { "row": "User Management", "permissions": { "all": true, "view": true, "create": true, "edit": true, "delete": false } },
+          { "row": "Role Management", "permissions": { "all": true, "view": true, "create": true, "edit": true, "delete": true } },
+          { "row": "General Settings", "permissions": { "all": true, "view": true, "create": true, "edit": true, "delete": true } }
+        ]
+      }
+    ]
+  },
+
+  {
+    "module": "TalentCore",
+    "enabled": true,
+    "sections": [
+      {
+        "name": "Talent Acquisition",
+        "enabled": true,
+        "modules": [
+          { "row": "Job Board", "permissions": { "all": true, "view": false, "create": false, "edit": false, "delete": false } },
+          { "row": "Candidate Screening-Upcoming Interview", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Candidate Screening-Interview Conducted", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Advanced Comparison", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Interview Questions", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Template Settings", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Talent Management",
+        "enabled": true,
+        "modules": [
+          { "row": "Talent Insights", "permissions": { "all": true, "view": false, "create": true, "edit": false, "delete": false, "export": true } },
+          { "row": "Advanced Comparison", "permissions": { "all": false, "view": false, "create": false, "edit": false, "delete": false, "export": false } }
+        ]
+      },
+      {
+        "name": "Job Management",
+        "enabled": true,
+        "modules": [
+          { "row": "Job Management", "permissions": { "all": true, "view": false, "create": false, "edit": false, "delete": false, "export": false } }
+        ]
+      },
+      {
+        "name": "Technical Skills Library",
+        "enabled": true,
+        "modules": [
+          { "row": "Technical Skills Library", "permissions": { "all": true, "view": false, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Settings",
+        "enabled": true,
+        "modules": [
+          { "row": "Organizational Structure-Employee List", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false, "export": false } },
+          { "row": "Organizational Structure-Chart", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false, "export": false } },
+          { "row": "Technical Assessment", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false, "export": false } }
+        ]
+      }
+    ]
+  },
+
+  {
+    "module": "Balanced Scorecard (BSC)",
+    "enabled": true,
+    "sections": [
+      {
+        "name": "BSC Dashboard",
+        "enabled": true,
+        "modules": [
+          { "row": "View", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Individual Metric Summary", "permissions": { "all": true, "view": false, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Strategic Planning",
+        "enabled": true,
+        "modules": [
+          { "row": "Listing Page", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Create New Plan", "permissions": { "all": true, "view": true, "create": true, "edit": false, "delete": false } },
+          { "row": "CEO Metrics Review", "permissions": { "all": true, "view": true, "create": true, "edit": true, "delete": true } },
+          { "row": "Division Metrics Review", "permissions": { "all": true, "view": true, "create": true, "edit": true, "delete": true } },
+          { "row": "Department Metrics Review", "permissions": { "all": true, "view": true, "create": true, "edit": true, "delete": true } },
+          { "row": "Plan Activation", "permissions": { "all": true, "view": true, "create": true, "edit": true, "delete": true } },
+          { "row": "Plan Archival", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": true } }
+        ]
+      },
+      {
+        "name": "Reports",
+        "enabled": false,
+        "modules": [
+          { "row": "Detailed Strategic Reports", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false, "export": true } }
+        ]
+      },
+      {
+        "name": "Division Performance Comparison",
+        "enabled": true,
+        "modules": [
+          { "row": "Division Performance Comparison", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false, "export": true } }
+        ]
+      },
+      {
+        "name": "Settings",
+        "enabled": true,
+        "modules": [
+          { "row": "Corporate Profile", "permissions": { "all": true, "view": true, "create": false, "edit": true, "delete": false } },
+          { "row": "Division Profile", "permissions": { "all": true, "view": true, "create": false, "edit": true, "delete": false } },
+          { "row": "Subsidiaries Profile", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Metric Tracker",
+        "enabled": false,
+        "modules": [
+          { "row": "Listing Page", "permissions": { "all": false, "view": true, "create": false, "edit": true, "delete": false } },
+          { "row": "Metric Detail Page", "permissions": { "all": false, "view": false, "create": false, "edit": true, "delete": false } }
+        ]
+      }
+    ]
+  },
+
+  {
+    "module": "Performance Management (PMS)",
+    "enabled": true,
+    "sections": [
+      {
+        "name": "Dashboard (Admin & Manager)",
+        "enabled": true,
+        "modules": [
+          { "row": "Admin Dashboard", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Manager Dashboard", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Plan Management (Admin & Manager)",
+        "enabled": true,
+        "modules": [
+          { "row": "Admin: Plan Review Listing", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Admin: Plan Review Page", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Manager: Team Plan Listing", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Manager: Review Plan Workflow", "permissions": { "all": false, "view": true, "create": false, "edit": true, "delete": true } },
+          { "row": "Manager: Adjust Plan Workflow", "permissions": { "all": false, "view": true, "create": false, "edit": true, "delete": true } }
+        ]
+      },
+      {
+        "name": "Performance Calibration",
+        "enabled": true,
+        "modules": [
+          { "row": "Main Dashboard", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Detailed Review Page", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Team & My Performance (Manager & All Users)",
+        "enabled": true,
+        "modules": [
+          { "row": "Manager: Team Performance Listing", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Manager: Team Performance Review Form", "permissions": { "all": true, "view": false, "create": false, "edit": true, "delete": false } },
+          { "row": "Manager: View Team Member Report", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "All Users: My Performance Dashboard", "permissions": { "all": true, "view": false, "create": false, "edit": false, "delete": false } },
+          { "row": "All Users: Self-Assessment Form", "permissions": { "all": true, "view": false, "create": false, "edit": false, "delete": false } }
+        ]
+      }
+    ]
+  },
+
+  {
+    "module": "Succession Planning",
+    "enabled": true,
+    "sections": [
+      {
+        "name": "Dashboard",
+        "enabled": false,
+        "modules": [
+          { "row": "View Analytics & KPIs", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Onboarding Journey", "permissions": { "all": false, "view": false, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Employee Profiles",
+        "enabled": false,
+        "modules": [
+          { "row": "View Full Profile", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Succession Pipeline",
+        "enabled": false,
+        "modules": [
+          { "row": "View Pipeline Table", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Create Candidate Pool", "permissions": { "all": true, "view": false, "create": true, "edit": false, "delete": false } },
+          { "row": "Manage Candidate Pools", "permissions": { "all": false, "view": false, "create": true, "edit": true, "delete": false } },
+          { "row": "Set & Assign Successors", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Career Paths",
+        "enabled": false,
+        "modules": [
+          { "row": "View All Employee Paths", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Assign Official Path", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Strategic Overview",
+        "enabled": false,
+        "modules": [
+          { "row": "View Employee List", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Compare Employees", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Settings",
+        "enabled": false,
+        "modules": [
+          { "row": "Manage Critical Position Status", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Manage Job Position Weights", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Manage Critical Position Weights", "permissions": { "all": false, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      }
+    ]
+  },
+
+  {
+    "module": "Survey Management System",
+    "enabled": true,
+    "sections": [
+      {
+        "name": "Dashboard",
+        "enabled": true,
+        "modules": [
+          { "row": "View All Widgets & Charts", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Extend Survey Expiry", "permissions": { "all": true, "view": false, "create": false, "edit": true, "delete": false } },
+          { "row": "View Live Results", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Group Management",
+        "enabled": true,
+        "modules": [
+          { "row": "List/Search Groups", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Create Group", "permissions": { "all": true, "view": false, "create": true, "edit": false, "delete": false } },
+          { "row": "Edit Group", "permissions": { "all": true, "view": false, "create": false, "edit": true, "delete": false } },
+          { "row": "Delete Group", "permissions": { "all": true, "view": false, "create": false, "edit": false, "delete": true } },
+          { "row": "Download Member Template", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Question Bank",
+        "enabled": true,
+        "modules": [
+          { "row": "List Sections", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Create Section", "permissions": { "all": true, "view": false, "create": true, "edit": false, "delete": false } },
+          { "row": "Edit Section / Save as Draft", "permissions": { "all": true, "view": false, "create": false, "edit": true, "delete": false } },
+          { "row": "View Live Results", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } }
+        ]
+      },
+      {
+        "name": "Survey Management & Lifecycle",
+        "enabled": true,
+        "modules": [
+          { "row": "List & View Details", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Create Survey", "permissions": { "all": true, "view": false, "create": true, "edit": false, "delete": false } },
+          { "row": "Edit Survey", "permissions": { "all": true, "view": false, "create": false, "edit": true, "delete": false } },
+          { "row": "Delete Survey", "permissions": { "all": true, "view": false, "create": false, "edit": false, "delete": true } },
+          { "row": "Duplicate Survey", "permissions": { "all": true, "view": false, "create": true, "edit": false, "delete": false } },
+          { "row": "Copy Survey Link", "permissions": { "all": true, "view": true, "create": false, "edit": false, "delete": false } },
+          { "row": "Extend Survey Expiry", "permissions": { "all": true, "view": false, "create": false, "edit": true, "delete": false } },
+          { "row": "Close Survey Manually", "permissions": { "all": true, "view": false, "create": false, "edit": true, "delete": false } },
+          { "row": "Start Survey Manually", "permissions": { "all": true, "view": false, "create": false, "edit": true, "delete": false } },
+          { "row": "Cancel Survey", "permissions": { "all": true, "view": false, "create": false, "edit": false, "delete": false } }
+        ]
+      }
+    ]
+  }
+]

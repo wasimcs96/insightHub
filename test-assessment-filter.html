@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Assessment Filter Design Test</title>
+    <link href="/css/app.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; font-family: Arial, sans-serif; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .design-note { background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="design-note">
+            <h3>🎨 Assessment Filter Design Test</h3>
+            <p>This page tests the Job-Centric Assessment Filter design matching the Figma screenshot</p>
+        </div>
+
+        <!-- Job-Centric Assessment Filter Section -->
+        <div data-key="assessment" class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="assessment-title">Job-Centric Assessment Filter</h3>
+            
+            <div class="assessment-active-header">
+                <h4 class="assessment-active-title">
+                    Active Filters <span class="assessment-count">(0)</span>
+                </h4>
+                <div class="assessment-tags" data-tags="assessment">
+                    <!-- Active filter tags will appear here -->
+                </div>
+            </div>
+
+            <p class="assessment-description">
+                Narrow down the search by selecting assessment types and their result levels. You can add up to 3 assessment filters.
+            </p>
+
+            <div class="assessment-form-container">
+                <select data-dropdown="type" class="assessment-select">
+                    <option value="" disabled selected>Select Assessment Type</option>
+                    <option value="technical">Technical Assessment</option>
+                    <option value="behavioral">Behavioral Assessment</option>
+                    <option value="cognitive">Cognitive Assessment</option>
+                </select>
+
+                <select data-dropdown="level" class="assessment-select" disabled>
+                    <option value="" disabled selected>Select Result Level</option>
+                    <option value="excellent">Excellent</option>
+                    <option value="good">Good</option>
+                    <option value="satisfactory">Satisfactory</option>
+                    <option value="needs_improvement">Needs Improvement</option>
+                </select>
+
+                <button data-action="add-filter" class="assessment-add-btn" disabled>
+                    Add Filter
+                </button>
+            </div>
+        </div>
+
+        <div class="design-note">
+            <h4>✅ Design Verification</h4>
+            <ul>
+                <li><strong>Title:</strong> "Job-Centric Assessment Filter" - 20px, weight 600</li>
+                <li><strong>Active Filters:</strong> "Active Filters (0)" - 16px, weight 600</li>
+                <li><strong>Description:</strong> Muted text explaining functionality</li>
+                <li><strong>Form Layout:</strong> Two dropdowns + Add Filter button in horizontal row</li>
+                <li><strong>Styling:</strong> Clean, minimalist design with proper spacing</li>
+                <li><strong>States:</strong> Disabled dropdowns and button until selections made</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Simple test to demonstrate functionality
+        const typeDropdown = document.querySelector('[data-dropdown="type"]');
+        const levelDropdown = document.querySelector('[data-dropdown="level"]');
+        const addButton = document.querySelector('[data-action="add-filter"]');
+
+        typeDropdown.addEventListener('change', function() {
+            if (this.value) {
+                levelDropdown.disabled = false;
+            } else {
+                levelDropdown.disabled = true;
+                addButton.disabled = true;
+            }
+        });
+
+        levelDropdown.addEventListener('change', function() {
+            if (this.value && typeDropdown.value) {
+                addButton.disabled = false;
+            } else {
+                addButton.disabled = true;
+            }
+        });
+
+        addButton.addEventListener('click', function() {
+            if (!this.disabled) {
+                alert(`Filter added: ${typeDropdown.options[typeDropdown.selectedIndex].text} - ${levelDropdown.options[levelDropdown.selectedIndex].text}`);
+            }
+        });
+    </script>
+</body>
+</html>

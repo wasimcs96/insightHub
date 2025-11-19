@@ -1,0 +1,42 @@
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+docker-compose.override.yml
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/.idea
+/.vscode
+/storage
+/bootstrap
+/.env
+./vendor
+# /public
+# ./public
+/public/.user.ini
+public/.user.ini
+./public/.user.ini
+composer.json
+composer.lock
+vendor/*.key
+vendor
+vendor/composer
+vendor/composer/autoload_static.php
+Jenkinsfile
+.Jenkinsfile
+/Jenkinsfile
+/public/.user.ini
+public/.user.ini
+public/user.ini
+/public/user.ini
+# Ignore everything under /public
+/public/*
+
+# EXCEPT css folder (force include)
+/public/css/

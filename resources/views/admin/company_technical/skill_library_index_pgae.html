@@ -1,0 +1,1494 @@
+    <script>
+        function scrollLetters(direction) {
+            const container = document.getElementById('letter-results');
+            const scrollAmount = 100; // Tune this value as needed
+
+            if (direction === 'left') {
+                container.scrollLeft -= scrollAmount;
+            } else {
+                container.scrollLeft += scrollAmount;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const feedbackMsg = document.getElementById('feedbackMessage');
+            const closeIcon = document.getElementById('closeIcon');
+
+            if (feedbackMsg) {
+                feedbackMsg.style.display = 'flex'; // Show the feedback message
+                feedbackMsg.style.setProperty('margin-top', '40px', 'important'); // Set top margin with !important
+                feedbackMsg.style.setProperty('margin-left', '30px',
+                    'important'); // Set left margin with !important
+                feedbackMsg.style.setProperty('margin-right', '30px',
+                    'important'); // Set right margin with !important
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+            if (closeIcon) {
+                closeIcon.addEventListener('click', function() {
+                    feedbackMsg.style.display = 'none'; // Hide it
+                });
+            }
+
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+
+            document.addEventListener('click', function(event) {
+                // Loop through all open jobdesc dropdowns
+                document.querySelectorAll('.jobdesc-wrapper.open').forEach(wrapper => {
+                    if (!wrapper.contains(event.target)) {
+                        wrapper.classList.remove('open');
+                    }
+                });
+            });
+
+
+            document.addEventListener('click', function(e) {
+                const target = e.target;
+                console.log(target);
+
+                if (target.classList.contains('delete-skill-btn')) {
+                    const skillName = target.getAttribute('data-skill-name');
+                    const skillId = target.getAttribute('data-skill-id');
+                    console.log(skillName);
+
+                    ModalManager.open({
+                        module: 'company_skill_library',
+                        key: "delete_technical_skill",
+                        data: {
+                            skillId: skillId,
+                            skillName: skillName,
+                        },
+                        onSubmit(modalEl1) {
+
+                            showOverlay();
+
+                            const deleteForm = modalEl1.querySelector('#deleteSkillForm');
+                            deleteForm.submit(); // Submit the form programmatically
+
+                            const bsModal = bootstrap.Modal.getInstance(modalEl1);
+                            bsModal.hide(); // Hide the modal after form submission
+                        },
+                        onShown(modalEl) {
+                            // Fetch related jobs once the modal is shown
+                            fetch(`/admin/company/sector-skills/related-jobs/${skillId}`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    // Update modal content
+                                    document.getElementById('affectedJobList').textContent =
+                                        data.affectedJobs.length ?
+                                        data.affectedJobs.join(', ') :
+                                        'No jobs are associated with this skill.';
+
+                                    document.getElementById('skillToDeleteName').textContent =
+                                        skillName;
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching related jobs:', error);
+                                });
+                        }
+                    });
+                }
+            });
+
+        });
+    </script>
+    <script>
+        const perPageMap = {};
+        let rowsPerPage = 10;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTechnicalSkills(null, 1);
+
+            function handleSearchInput() {
+                const searchValue = document.getElementById('search_job_title').value;
+                syncSelectedDepartments();
+                loadTechnicalSkills(getSelectedCategoryId(), 1, selectedLetter, selectedLevel);
+            }
+
+            document.getElementById('search_job_title').addEventListener('input', debounce(function() {
+                syncSelectedDepartments(); // make sure latest selection is stored
+                loadTechnicalSkills(getSelectedCategoryId(), 1, selectedLetter, selectedLevel);
+            }, 500));
+
+            document.getElementById('category-results').addEventListener('click', function(event) {
+                if (event.target && event.target.closest('.category-item')) {
+                    const selectedItem = event.target.closest('.category-item');
+                    console.log('Category clicked:', selectedItem); // Add this line for testing
+                    document.querySelectorAll('.category-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    selectedItem.classList.add('active');
+
+                    const categoryId = selectedItem.dataset.categoryId;
+
+                    const baseUrl = "{{ route('sector.skills.company.create') }}";
+                    document.getElementById('add-skill-btn').href = `${baseUrl}?category_id=${categoryId}`;
+
+                    const categoryTitle = selectedItem.querySelector('span').textContent.trim();
+                    const buttonText = document.getElementById('add-skill-btn-text');
+                    buttonText.textContent = categoryTitle === 'All Categories' ?
+                        'Create New Technical Skill' :
+                        `Create New Technical Skill to Category`;
+                    loadTechnicalSkills(categoryId, 1);
+                }
+            });
+
+            document.getElementById('letter-results').addEventListener('click', function(event) {
+                const letterBtn = event.target.closest('.tab-button-bottom');
+                if (!letterBtn) return;
+
+                selectedLetter = letterBtn.querySelector('p').textContent.trim();
+                if (selectedLetter === 'ALL') selectedLetter = null;
+                syncSelectedDepartments();
+
+                document.querySelectorAll('#letter-results .tab-button-bottom').forEach(btn => {
+                    btn.classList.remove('bg-active');
+                });
+                letterBtn.classList.add('bg-active');
+
+                loadTechnicalSkills(getSelectedCategoryId(), 1, selectedLetter, selectedLevel);
+            });
+
+            document.querySelectorAll('.tab-button-bottom').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    const levelBtn = event.target.closest('.tab-button-bottom');
+                    if (!levelBtn) return;
+
+                    const level = levelBtn.querySelector('p')?.textContent?.trim();
+                    if (!level) return;
+
+                    console.log('Level clicked:', level);
+
+                    document.querySelectorAll('.tab-button-bottom').forEach(btn => {
+                        btn.classList.remove('bg-active');
+                    });
+
+                    levelBtn.classList.add('bg-active');
+
+                    resetSelection(false);
+                    selectedLevel = level;
+                    loadTechnicalSkills(getSelectedCategoryId(), 1, selectedLetter, selectedLevel);
+                });
+            });
+
+            document.getElementById('pagination-links').addEventListener('click', function(event) {
+                if (event.target && event.target.tagName === 'A') {
+                    const page = event.target.getAttribute('data-page');
+                    const categoryId = getSelectedCategoryId();
+                    console.log('categoryid', categoryId);
+                    loadTechnicalSkills(categoryId, page);
+                }
+            });
+        });
+
+        let currentSort = 'name'; // Default sorting column (e.g., 'name')
+        let currentOrder = 'asc'; // Default sorting order (e.g., 'asc')
+        // Sorting function
+        function sortTable(column) {
+            const sortableHeader = $(`.sortable-header[data-column="${column}"]`);
+            // Determine if the clicked column is the same as the current sort column
+            if (currentSort === column) {
+                // Toggle the sorting order (asc/desc)
+                currentOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+                // $this.data('sort', 'desc');
+            } else {
+                // If a new column is clicked, set it as the sorting column and default to ascending order
+                currentSort = column;
+                currentOrder = 'asc';
+                // $this.data('sort', 'asc');
+            }
+            sortableHeader.data('sort', currentOrder);
+
+            // Update the sorting icon color based on the current order
+            updateSortIcons(sortableHeader, currentOrder);
+
+            loadTechnicalSkills(getSelectedCategoryId(), 1, selectedLetter, selectedLevel, currentSort, currentOrder);
+        }
+
+        function updateSortIcons(header, order) {
+            // Hide all sort icons
+            $('.sortable-header').find('.sort-icon .sort-up path, .sort-icon .sort-down path').css('stroke', 'grey');
+
+            // $header.find('.sort-icon .sort-up path, .sort-icon .sort-down path').css('stroke', 'transparent');
+
+            // Apply the color based on the sorting order (orange for both asc and desc)
+            if (order === 'asc') {
+                header.find('.sort-icon .sort-up path').css('stroke', 'orange'); // Show up arrow
+                header.find('.sort-icon .sort-down path').css('stroke', 'grey'); // Show down arrow
+
+            } else if (order === 'desc') {
+                header.find('.sort-icon .sort-down path').css('stroke', 'orange'); // Show down arrow
+                header.find('.sort-icon .sort-up path').css('stroke', 'grey'); // Show up arrow
+
+            }
+        }
+
+        $('.sortable-header').on('click', function() {
+            const column = $(this).data('column'); // Get the column associated with this header
+            sortTable(column);
+        });
+
+
+        let currentRequestId = 0;
+
+        let currentAbortController = null;
+
+        function loadTechnicalSkills(categoryId, page, letter = selectedLetter, level = selectedLevel, sort = null, order =
+            null) {
+            if (currentAbortController) {
+                currentAbortController.abort();
+            }
+
+            // Create new AbortController for current request
+            currentAbortController = new AbortController();
+            const signal = currentAbortController.signal;
+
+            // Increment request ID to track the latest one
+            const requestId = ++currentRequestId;
+
+            showOverlay();
+
+            const search = document.getElementById('search_job_title').value;
+            const departmentIds = Array.from(selectedDepartments);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            // const sort = urlParams.get('sort') || '';
+            // const order = urlParams.get('order') || '';
+
+            const perPage = perPageMap['default'] || 10;
+
+            let url =
+                `/admin/company/technical/skill/fetch?page=${page}&search=${search}&letter=${letter}&category_id=${categoryId}&level=${level}&department_ids=${departmentIds.join(',')}&per_page=${perPage}&sort=${sort}&order=${order}`;
+
+            let deptPerPageParams = '';
+            Object.entries(perPageMap).forEach(([dept, value]) => {
+                if (dept !== 'default') {
+                    deptPerPageParams += `&per_page_dept_${dept}=${value}`;
+                }
+            });
+
+            url += deptPerPageParams;
+
+            console.log('Selected departments before fetch:', departmentIds);
+            console.log('Final fetch URL:', url);
+
+
+
+            fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    signal: signal
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (requestId !== currentRequestId) return;
+
+                    if (data.visibleLetters) {
+                        updateLetters(data.visibleLetters);
+                    }
+
+                    const countEl = document.getElementById('technical_skill_found');
+
+                    if (departmentIds.length > 0 && data.skillsByDept && Object.keys(data.skillsByDept).length > 0) {
+                        renderDeptTables(data.skillsByDept);
+
+                        let total = 0;
+                        Object.values(data.skillsByDept).forEach(dept => {
+                            total += dept.pagination?.total || 0;
+                        });
+
+                        if (countEl) countEl.textContent = total;
+                    } else {
+                        updateSkillsTable(data.technicalSkills);
+                        if (countEl) countEl.textContent = data.technicalSkills.total ?? 0;
+                    }
+
+                    updatePagination(data.pagination, page);
+                    hideOverlay();
+                });
+
+        }
+
+
+        function renderPaginationWithRowsDropdown(container, deptId) {
+            const wrapper = container.querySelector('.pagination-wrapper');
+            if (!wrapper) return;
+
+            const leftDiv = wrapper.querySelector('.d-flex.align-items-center.gap-2');
+            if (!leftDiv) return;
+
+            // Clear any existing dropdown
+            leftDiv.innerHTML = '';
+
+            // Create dropdown HTML
+            const dropdownHTML = `
+                <label for="rowsPerPageSelect_${deptId}">Rows per page:</label>
+                <select id="rowsPerPageSelect_${deptId}" class="form-select form-select-sm" style="width: auto;">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+            `;
+
+            leftDiv.innerHTML = dropdownHTML;
+
+            const dropdown = leftDiv.querySelector(`#rowsPerPageSelect_${deptId}`);
+            dropdown.value = perPageMap[deptId] || 10;
+
+            dropdown.addEventListener('change', function() {
+                perPageMap[deptId] = parseInt(this.value);
+                loadTechnicalSkills(getSelectedCategoryId(), 1, selectedLetter, selectedLevel);
+            });
+        }
+
+
+
+
+        function updateSkillsTable(technicalSkills) {
+            const container = document.getElementById('dept-tables-container');
+            let table = document.getElementById('skills-table');
+
+            // Create table if it doesn't exist
+            if (!table) {
+                container.innerHTML = '';
+                borderMain = document.createElement('div');
+                borderMain.classList.add('border-main');
+
+                table = document.createElement('table');
+                table.id = 'skills-table';
+                table.classList.add('skills-table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Technical Skill Title</th>
+                            <th>Last Updated</th>
+                            <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon>1</th>
+                            <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon>2</th>
+                            <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon>3</th>
+                            <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon>4</th>
+                            <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon>5</th>
+                            <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon>6</th>
+                            <th class="star-header">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+
+                paginationDiv = document.createElement('div');
+                paginationDiv.classList.add(...
+                    'd-flex align-items-center justify-content-between flex-wrap gap-3 m-4 pagination-wrapper'.split(
+                        ' '));
+
+
+
+
+                rowsDiv = document.createElement('div');
+                rowsDiv.classList.add(...'d-flex align-items-center gap-2'.split(' '));
+
+                navElement = document.createElement('nav');
+                navDiv = document.createElement('div');
+                navDiv.id = 'pagination-links';
+                navDiv.classList.add(...'pagination mb-0'.split(' '));
+                navElement.appendChild(navDiv);
+
+                paginationDiv.appendChild(rowsDiv);
+                paginationDiv.appendChild(navElement);
+
+
+                borderMain.appendChild(table);
+                borderMain.appendChild(paginationDiv);
+
+                container.appendChild(borderMain);
+            }
+
+            // Render skill rows
+            const tableBody = table.querySelector('tbody');
+            tableBody.innerHTML = '';
+
+            if (technicalSkills.data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px 0; color: #999;">
+                            No skills available.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                technicalSkills.data.forEach(skill => {
+                    let row = `
+                        <tr>
+                            <td><p class="m-0 d-flex align-items-center gap-3">${skill.name}  ${isNewSkill(skill.created_at) ? '<span class="badge-status approved m-0">NEW</span>' : ''}</p></td>
+                            <td>${formatDate(skill.updated_at)}</td>
+                    `;
+                    for (let i = 1; i <= 6; i++) {
+                        row +=
+                            `<td class="checkmark">${skill[`level_${i}_description`] ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>`;
+                    }
+                    row += `
+                        <td class="actions text-center">
+                            <button class="action-btn" onclick="toggleDropdownTable(this)">⋮</button>
+                            <div class="dropdown-menu">
+                                <a href="/admin/company/sector-skills/view/${skill.id}" class="view-skill-details-btn" data-skill-id="${skill.id}">View Details</a>
+                                <a href="#" class="edit-skill-btn" data-skill-name="${skill.name}" data-skill-id="${skill.id}">Edit Technical Skill</a>
+                                <a href="#" class="delete-skill-btn" data-skill-id="${skill.id}" data-skill-name="${skill.name}">Delete Technical Skill</a>
+                            </div>
+                        </td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            }
+
+            // Render or refresh pagination and dropdown
+            if (!perPageMap['default']) perPageMap['default'] = 10;
+            renderPaginationWithRowsDropdown(container, 'default');
+        }
+
+        function updateDepartments(departments) {
+            const list = document.getElementById('optionsList');
+            list.innerHTML = departments.map(d => `
+                <label class="checkbox-option">
+                <input type="checkbox" value="${d.id}" ${selectedDepartments.has(d.id.toString()) ? 'checked' : ''}>
+                ${d.name}
+                </label>
+            `).join('');
+
+            list.querySelectorAll('input[type=checkbox]').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    syncSelectedDepartments();
+                });
+            });
+
+            document.getElementById('selectedLabel').textContent =
+                `${selectedDepartments.size} Job Famil${selectedDepartments.size !== 1 ? 'ies' : 'y'} selected`;
+        }
+
+        function updatePagination(pagination, currentPage) {
+            console.log('Updating pagination for page', currentPage, pagination);
+
+            const paginationLinks = document.getElementById('pagination-links');
+
+            if (!paginationLinks) {
+                console.warn('Pagination element not found, skipping update.');
+                return;
+            }
+            paginationLinks.innerHTML = ''; // Clear existing pagination
+
+            const container = document.getElementById('pagination-container');
+            if (container) {
+                container.innerHTML = html;
+            }
+
+            const maxPageNumbersToShow = 5;
+            let pageNumbers = [];
+
+            const lastPage = pagination.last_page || 1;
+            const currentPageNumber = pagination.current_page || 1;
+
+            if (lastPage > maxPageNumbersToShow) {
+                if (currentPageNumber <= 3) {
+                    pageNumbers = [1, 2, 3, 4, '...', lastPage];
+                } else if (currentPageNumber >= lastPage - 2) {
+                    pageNumbers = [1, '...', lastPage - 3, lastPage - 2, lastPage - 1, lastPage];
+                } else {
+                    pageNumbers = [1, '...', currentPageNumber - 1, currentPageNumber, currentPageNumber + 1, '...',
+                        lastPage
+                    ];
+                }
+            } else {
+                for (let i = 1; i <= lastPage; i++) {
+                    pageNumbers.push(i);
+                }
+            }
+
+            if (pagination.prev_page_url) {
+                paginationLinks.innerHTML += `<li class="page-item">
+            <a class="page-link" href="#" data-page="${currentPageNumber - 1}">&laquo;</a>
+            </li>`;
+            } else {
+                paginationLinks.innerHTML += `<li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+            </li>`;
+            }
+
+            pageNumbers.forEach(page => {
+                if (page === '...') {
+                    paginationLinks.innerHTML +=
+                        `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                } else {
+                    paginationLinks.innerHTML += `<li class="page-item ${currentPageNumber === page ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${page}">${page}</a>
+                </li>`;
+                }
+            });
+
+            if (pagination.next_page_url) {
+                paginationLinks.innerHTML += `<li class="page-item">
+                <a class="page-link" href="#" data-page="${currentPageNumber + 1}">&raquo;</a>
+            </li>`;
+            } else {
+                paginationLinks.innerHTML += `<li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+            </li>`;
+            }
+        }
+
+        function getSelectedCategoryId() {
+            const activeCategory = document.querySelector('.category-item.active');
+            return activeCategory ? activeCategory.dataset.categoryId : null;
+        }
+
+        function updateLetters(visibleLetters) {
+            const letterList = document.getElementById('letter-results');
+            const leftButton = document.querySelector('.scroll-btn.left');
+            const rightButton = document.querySelector('.scroll-btn.right');
+
+            letterList.innerHTML = '';
+
+            letterList.innerHTML += `
+                <a href="#" class="tab-button-bottom ${!selectedLetter ? 'bg-active' : ''}">
+                    <p>ALL</p>
+                </a>
+            `;
+
+            visibleLetters.forEach(letter => {
+                const isActive = selectedLetter === letter;
+                letterList.innerHTML += `
+                    <a href="#" class="tab-button-bottom ${isActive ? 'bg-active' : ''}">
+                        <p>${letter}</p>
+                    </a>
+                `;
+            });
+
+            if (visibleLetters.length < 5) {
+                leftButton.style.display = 'none';
+                rightButton.style.display = 'none';
+            } else {
+                leftButton.style.display = 'block';
+                rightButton.style.display = 'block';
+            }
+        }
+    </script>
+    <script>
+        function renderJobTags(deptId, container, jobs) {
+            const prevSelected = selectedJobIds[deptId] || new Set();
+            const jobMap = (jobs || []).reduce((acc, job) => {
+                acc[job.id] = job.title;
+                return acc;
+            }, {});
+
+            container.innerHTML = Array.from(prevSelected).map(id => `
+                <span class="job-tag" data-job-id="${id}" data-dept-id="${deptId}">
+                    ${jobMap[id] || 'Unknown'}
+                    <span class="remove-tag" onclick="removeJobTag('${deptId}', '${id}')">&times;</span>
+                </span>
+            `).join('');
+        }
+
+        function renderDeptTables(skillsByDept) {
+            const container = document.getElementById('dept-tables-container');
+            container.innerHTML = '';
+
+            Object.entries(skillsByDept).forEach(([deptId, deptBlock]) => {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('dept-table');
+                wrapper.dataset.dept = deptId;
+                console.log('department block', deptBlock);
+                console.log('first time pagination', deptBlock.pagination);
+                const jobDropdown = `
+                <div class="d-flex justify-content-between align-items-start mb-5 mt-7 flex-wrap gap-3">
+                    <div class="d-flex flex-column">
+                        <h4 class="m-0">${deptBlock.department}</h4>
+                        <div class="dept-skill-count" data-dept-id="${deptId}"></div>
+                        <div class="selected-job-tags d-flex flex-wrap gap-2 mt-5" data-dept-id="${deptId}"></div>
+                    </div>
+                    <div class="select-wrapper jobdesc-wrapper" style="width: 261px;" data-dept="${deptBlock.pagination.page_param}">
+                        <div class="select-box jobdesc-select" onclick="toggleJobdescDropdown(this)">
+                            <span class="jobdesc-label">0 selected</span>
+                            <span class="arrow">▾</span>
+                        </div>
+                        <div class="dropdown jobdesc-dropdown">
+                            <div class="search-input d-flex align-items-center gap-2 py-4 px-3">
+                                <iconify-icon icon="stash:search-solid" width="16" height="16"></iconify-icon>
+                                <input type="text" class="border-0" placeholder="Search Job Position" onkeyup="filterJobdescOptions(this)">
+                            </div>
+                            <div class="options-list px-3">
+                                ${deptBlock.jobs.map(job => `
+                                                                                                            <label class="checkbox-option">
+                                                                                                                <input type="checkbox" value="${job.id}" data-label="${job.title}">
+                                                                                                                ${job.title}
+                                                                                                            </label>`).join('')}
+                            </div>
+                            <div class="dropdown-footer px-3 py-2 text-end">
+                                <button class="btn-reset me-2" onclick="resetJobdescSelection(this)">Reset</button>
+                                <button class="btn-filter" onclick="applyJobdescFilter(this)">Filter</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                wrapper.innerHTML = `
+                ${jobDropdown}
+                <div class="table-container">
+                <div class="border-main">
+                <table class="table">
+                    <thead>
+                        <tr>
+                             <th>Technical Skill Title</th>
+                        <th>Last Updated</th>
+                        <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon> 1</th>
+                        <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon> 2</th>
+                        <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon> 3</th>
+                        <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon> 4</th>
+                        <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon> 5</th>
+                        <th class="star-header"><iconify-icon icon="ic:baseline-star" width="15" height="15"></iconify-icon> 6</th>
+
+                        <th>Actions</th>
+
+                        </tr>
+                        </thead>
+                     <tbody>
+                    ${deptBlock.data.length === 0
+                    ? `<tr><td colspan="9" style="text-align: center; padding: 40px 0; color: #999;">No skills available.</td></tr>`
+                    : deptBlock.data.map(s => `
+                                                    <tr>
+                                                        <td><p class="m-0 d-flex align-items-center gap-3">${s.name} ${isNewSkill(s.created_at) ? '<span class="badge-status approved m-0">NEW</span>' : ''}</p></td>
+                                                        <td>${formatDate(s.updated_at)}</td>
+                                                        <td class="checkmark">${s.level_1_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                                                        <td class="checkmark">${s.level_2_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                                                        <td class="checkmark">${s.level_3_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                                                        <td class="checkmark">${s.level_4_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                                                        <td class="checkmark">${s.level_5_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                                                        <td class="checkmark">${s.level_6_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                                                        <td class="actions text-center">
+                                                            <button class="action-btn" toggleDropdownTable(this)>⋮</button>
+                                                            <div class="dropdown-menu">
+                                            
+                                                                    <a href="/admin/company/sector-skills/view/${s.id}" class="view-skill-details-btn" data-skill-id="${s.id}">View Details</a>
+                                                                <a href="#" class="edit-skill-btn" data-skill-name="${s.name}"  data-skill-id="${s.id}">Edit Technical Skill</a>
+                                                                <a href="#" class="delete-skill-btn" data-skill-id="${s.id}" data-skill-name="${s.name}">Delete Technical Skill</a>
+                                                            
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                                                                                                                                            `).join('')}
+                    </tbody>
+                            </table>
+                                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 m-4 pagination-wrapper">
+                                                <div class="d-flex align-items-center gap-2">
+                                                  
+                                                </div>
+                                                 <nav>
+                                                    <ul class="pagination" data-dept="${deptBlock.pagination.page_param}">
+                                                        ${deptBlock.pagination.prev_url ? 
+                                                            `<li class="page-item"><a href="#" class="page-link prvurl" data-page-url="${deptBlock.pagination.prev_url}">&laquo;</a></li>` 
+                                                            : `<li class="page-item disabled"><span class="page-link">&laquo;</span></li>`}
+                                                        ${[...Array(deptBlock.pagination.last_page).keys()].map(i => {
+                                                            const page = i + 1;
+                                                            return page === deptBlock.pagination.current_page
+                                                                ? `<li class="page-item active"><span class="page-link">${page}</span></li>`
+                                                                : `<li class="page-item"><a href="#" class="page-link crnturl" data-page-url="?${deptBlock.pagination.page_param}=${page}">${page}</a></li>`;
+                                                        }).join('')}
+                                                        ${deptBlock.pagination.next_url ? 
+                                                            `<li class="page-item"><a href="#" class="page-link nxturl" data-page-url="${deptBlock.pagination.next_url}">&raquo;</a></li>` 
+                                                            : `<li class="page-item disabled"><span class="page-link">&raquo;</span></li>`}
+                                                    </ul>
+                                                </nav>
+                                                
+                                            </div>
+                                            </div>
+                                            <div class="bottom-render-line"></div>
+                                            </div>
+                 
+                `;
+
+                const countTarget = wrapper.querySelector(`.dept-skill-count[data-dept-id="${deptId}"]`);
+                if (countTarget) {
+                    const count = deptBlock.pagination?.total ?? 0;
+                    countTarget.innerHTML = `${count} technical skills found.`;
+                }
+
+
+                const deptParam = wrapper.dataset.dept;
+                const jobTagContainer = wrapper.querySelector('.selected-job-tags');
+                if (jobTagContainer) {
+                    renderJobTags(deptId, jobTagContainer, deptBlock.jobs);
+                }
+
+                const prevSet = selectedJobIds[deptParam] || new Set();
+                wrapper.querySelectorAll('input[type=checkbox]').forEach(cb => {
+                    if (prevSet.has(cb.value)) cb.checked = true;
+
+                    cb.addEventListener('change', () => {
+                        syncSelectedJobIds(
+                            deptParam); // Make sure job IDs are synced when the checkbox is clicked
+                    });
+                });
+
+                updateJobdescLabel(wrapper);
+                container.appendChild(wrapper);
+
+                if (!perPageMap[deptId]) {
+                    perPageMap[deptId] = 10; // default
+                }
+                renderPaginationWithRowsDropdown(wrapper.querySelector('.border-main'), deptId);
+
+                wrapper.querySelectorAll('.pagination a').forEach(paginationLink => {
+                    paginationLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const pageUrl = e.target.getAttribute('data-page-url');
+                        fetchDeptPage(wrapper, pageUrl); // Fetch page for this department
+                    });
+                });
+
+
+            });
+            document.querySelectorAll('.action-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    toggleDropdownTable(this); // Attach event listener again
+                });
+            });
+            attachResetButtonEventListener();
+            attachDeptTableEvents();
+        }
+
+        function isNewSkill(createdAt) {
+            const now = new Date();
+            const createdDate = new Date(createdAt);
+            const diffInMs = now - createdDate;
+            const diffInHours = diffInMs / (1000 * 60 * 60);
+            console.log('differnceeeeeeeeeeeeeeeeee', diffInHours);
+            return diffInHours <= 24;
+        }
+
+        function attachDeptTableEvents() {
+            document.querySelectorAll('.jobdesc-filter').forEach(sel => {
+                sel.addEventListener('change', e => {
+                    const deptParam = e.target.dataset.dept;
+                    const jobdesc = e.target.value;
+                    const base = e.target.closest('.dept-table').querySelector('ul.pagination')
+                        .querySelector('a[data-page-url]').getAttribute('data-page-url').split('?')[0];
+                    const url = `${base}?${deptParam}=1&jobdesc=${jobdesc}&${getCommonQueryParams()}`;
+                    fetchDeptPage(e.target.closest('.dept-table'), url);
+                });
+            });
+
+            document.querySelectorAll('ul.pagination').forEach(ul => {
+                ul.addEventListener('click', e => {
+                    if (e.target.tagName === 'A') {
+                        e.preventDefault();
+
+                        const deptTable = e.target.closest('.dept-table');
+                        const deptIdRaw = deptTable?.dataset?.dept || '';
+                        const deptId = deptIdRaw.replace('page_dept_',
+                            ''); // actual department ID (e.g., 8)
+
+                        const selectedJobsSet = selectedJobIds[deptId] || new Set();
+                        const selectedJobIdsString = Array.from(selectedJobsSet).join(',');
+
+                        const perPage = perPageMap[deptId] || 10;
+
+                        const commonParams = getCommonQueryParams();
+                        const fullUrl =
+                            `${e.target.dataset.pageUrl}&${commonParams}&per_page_dept_${deptId}=${perPage}&job_ids=${selectedJobIdsString}`;
+
+                        fetchDeptPage(deptTable, fullUrl);
+                    }
+                });
+
+            });
+        }
+
+        function fetchDeptPage(tableDiv, url) {
+            console.log('fetchdeptpageeeee', tableDiv)
+            showOverlay();
+
+            const deptId = tableDiv.dataset.dept;
+            const perPage = perPageMap[deptId] || 10;
+
+            const selectedJobs = selectedJobIds[deptId] || new Set();
+            const jobIds = Array.from(selectedJobs).join(',');
+
+            // Pull other values you use
+            const search = encodeURIComponent(document.getElementById('search_job_title').value);
+            const categoryId = getSelectedCategoryId() || '';
+            const letter = selectedLetter || '';
+            const level = selectedLevel || '';
+            const departmentIds = getSelectedDepartments().join(',');
+
+            // Update the URL to include all necessary params
+            url +=
+                `&search=${search}&category_id=${categoryId}&letter=${letter}&level=${level}&department_ids=${departmentIds}&per_page_dept_${deptId}=${perPage}&job_ids=${jobIds}`;
+
+            fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    console.log('dataaaaaaaaaaaa', data);
+                    const param = tableDiv.querySelector('ul.pagination').dataset.dept;
+                    console.log('parammmmmmmmmmmmmm', param);
+                    console.log('data department', data);
+                    const block = data.skillsByDept[param.replace('page_dept_', '')];
+                    console.log('blockkkkkkkkkkkkkkkkkkkkkkkkkkk', block);
+                    const tbody = tableDiv.querySelector('tbody');
+                    tbody.innerHTML = block.data.map(skill => `
+                        <tr>
+                            <td>${skill.name}</td>
+                            <td>${formatDate(skill.updated_at)}</td>
+                            <td class="checkmark">${skill.level_1_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                            <td class="checkmark">${skill.level_2_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                            <td class="checkmark">${skill.level_3_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                            <td class="checkmark">${skill.level_4_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                            <td class="checkmark">${skill.level_5_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                            <td class="checkmark">${skill.level_6_description ? '<iconify-icon icon="prime:check-circle" width="24" height="24"></iconify-icon>' : ''}</td>
+                            <td class="actions text-center">
+                                <button class="action-btn" toggleDropdownTable(this)>⋮</button>
+                                <div class="dropdown-menu">
+                                
+                                      <a href="/admin/company/sector-skills/view/${skill.id}" class="view-skill-details-btn" data-skill-id="${skill.id}">View Details</a>
+                            <a href="#" class="edit-skill-btn" data-skill-name="${skill.name}"  data-skill-id="${skill.id}">Edit Technical Skill</a>
+                            <a href="javascript:void(0)" class="delete-skill-btn" data-skill-id="${skill.id}" data-skill-name="${skill.name}">Delete Technical Skill</a>
+                        
+                                </div>
+                            </td>
+                        </tr>
+        `).join('');
+                    const pagination = tableDiv.querySelector('.pagination');
+                    console.log('paginationnnnnnnnnnnnnn', block.pagination)
+
+
+                    let paginationHTML = '';
+
+                    if (block.pagination.prev_url) {
+                        paginationHTML += `
+                                <li class="page-item">
+                                    <a href="#" class="page-link" data-page-url="${block.pagination.prev_url}">&laquo;</a>
+                                </li>
+                            `;
+                    } else {
+                        paginationHTML += `<li class="page-item disabled"><span class="page-link">&laquo;</span></li>`;
+                    }
+
+                    const totalPages = block.pagination.last_page;
+                    for (let page = 1; page <= totalPages; page++) {
+                        const activeClass = (page === block.pagination.current_page) ? 'active' : '';
+                        paginationHTML += `
+                                <li class="page-item ${activeClass}">
+                                    <a class="page-link numberrpage" href="#"  data-page-url="?${block.pagination.page_param}=${page}">${page}</a>
+                                </li>
+                            `;
+                    }
+
+                    if (block.pagination.next_url) {
+                        paginationHTML += `
+                                <li class="page-item">
+                                    <a class="page-link" href="#" data-page-url="${block.pagination.next_url}">&raquo;</a>
+                                </li>
+                            `;
+                    } else {
+                        paginationHTML += `<li class="page-item disabled"><span class="page-link">&raquo;</span></li>`;
+                    }
+
+
+                    pagination.innerHTML = paginationHTML;
+
+                    document.querySelectorAll('.action-btn').forEach(button => {
+                        button.addEventListener('click', function() {
+                            toggleDropdownTable(this); // Attach event listener again
+                        });
+                    });
+                    hideOverlay();
+
+                });
+        }
+
+        function getCommonQueryParams() {
+            const depts = getSelectedDepartments().join(',');
+            const search = encodeURIComponent(document.getElementById('search_job_title').value || '');
+            const categoryId = getSelectedCategoryId() || '';
+            const letter = selectedLetter || '';
+            const level = selectedLevel || '';
+
+            return `department_ids=${depts}&search=${search}&category_id=${categoryId}&letter=${letter}&level=${level}`;
+        }
+    </script>
+    <script>
+        const selectBox = document.querySelector('.select-box');
+        const dropdown = document.getElementById('dropdownMenu');
+        const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+        const label = document.getElementById('selectedLabel');
+        const selectedDepartments = new Set();
+        const selectedJobIds = {}; // keyed by deptId
+        let selectedLetter = null;
+        let selectedLevel = null;
+
+        function syncSelectedDepartments() {
+            selectedDepartments.clear();
+            document.querySelectorAll('#optionsList input[type="checkbox"]:checked')
+                .forEach(cb => selectedDepartments.add(cb.value));
+        }
+
+
+        function syncSelectedJobIds(deptParam, selectedJobs) {
+            const deptId = deptParam.replace('page_dept_', '');
+            selectedJobIds[deptId] = selectedJobs;
+            console.log('Updated selected jobs for dept', deptId, selectedJobIds[deptId]);
+        }
+
+        function toggleDropdown() {
+            selectBox.classList.toggle('open');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleJobdescDropdown(element) {
+            const wrapper = element.closest('.jobdesc-wrapper');
+            wrapper.classList.toggle('open');
+        }
+
+
+        function updateSelectedCount() {
+            const checkedCount = [...checkboxes].filter(cb => cb.checked).length;
+            // label.textContent = `${checkedCount} Department${checkedCount !== 1 ? '(ies)' : ''} selected`;
+            if (checkedCount === 0) {
+                label.textContent = 'Select department(s)';
+            } else {
+                label.textContent = `${checkedCount} department(s) selected`;
+            }
+        }
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateSelectedCount);
+        });
+
+        function resetSelection(preserveLevel = false) {
+            // Clear department checkboxes
+            document.querySelectorAll('#optionsList input[type="checkbox"]:checked').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            selectedDepartments.clear();
+            selectedLetter = null;
+            selectedLevel = null;
+
+            if (!preserveLevel) {
+                selectedLevel = null;
+            }
+            syncSelectedDepartments();
+            updateSelectedCount();
+
+            document.querySelectorAll('#letter-results .tab-button-bottom').forEach(btn => {
+                btn.classList.remove('bg-active');
+                if (btn.textContent.trim() === 'ALL') {
+                    btn.classList.add('bg-active');
+                }
+            });
+            loadTechnicalSkills(null, 1, null, null);
+        }
+
+
+        function getSelectedDepartments() {
+            const selectedDepartments = [];
+            document.querySelectorAll('#optionsList input[type="checkbox"]:checked').forEach(checkbox => {
+                selectedDepartments.push(checkbox.value);
+            });
+            console.log('selectedDepartment', selectedDepartments);
+            return selectedDepartments;
+        }
+
+        function filterOptions(input) {
+            const filter = input.value.toLowerCase();
+            document.querySelectorAll("#optionsList label").forEach(label => {
+                const text = label.textContent.toLowerCase();
+                label.style.display = text.includes(filter) ? '' : 'none';
+            });
+        }
+
+        window.addEventListener('click', (e) => {
+            if (!document.querySelector('.select-wrapper').contains(e.target)) {
+                dropdown.classList.remove('show');
+                selectBox.classList.remove('open');
+            }
+        });
+
+        function updateJobdescLabel(wrapper) {
+            const count = wrapper.querySelectorAll('input[type=checkbox]:checked').length;
+            wrapper.querySelector('.jobdesc-label').textContent = `${count} selected`;
+        }
+
+        document.getElementById('dept-tables-container').addEventListener('click', function(event) {
+            if (event.target && event.target.matches('.btn-filter')) {
+                const wrapper = event.target.closest('.jobdesc-wrapper');
+                console.log('Wrapper:', wrapper);
+                applyJobdescFilter(wrapper); // Call the filter function when the filter button is clicked
+            }
+        });
+
+        function applyJobdescFilter(wrapper) {
+            const deptParam = wrapper.dataset.dept;
+            const selectedJobs = Array.from(wrapper.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(cb => ({
+                    id: cb.value,
+                    label: cb.dataset.label
+                }));
+
+            syncSelectedJobIds(deptParam, new Set(selectedJobs.map(j => j.id)));
+
+            // Show selected job tags
+            const deptId = deptParam.replace('page_dept_', '');
+            const tagContainer = wrapper.closest('.dept-table').querySelector('.selected-job-tags');
+
+            if (tagContainer) {
+                tagContainer.innerHTML = selectedJobs.map(j =>
+                    `<span class="job-tag" data-job-id="${j.id}" data-dept-id="${deptId}">
+                        ${j.label}
+                        <span class="remove-tag" onclick="removeJobTag('${deptId}', '${j.id}')">&times;</span>
+                    </span>`
+                ).join('');
+            }
+
+
+            // Proceed with filtering
+            const tableDiv = wrapper.closest('.dept-table');
+            const page = 1;
+            const categoryId = getSelectedCategoryId();
+            const search = encodeURIComponent(document.getElementById('search_job_title').value);
+            const departmentIds = getSelectedDepartments().join(',');
+            const jobIds = selectedJobs.map(j => j.id).join(',');
+
+            const perPage = perPageMap[deptId] || 10;
+            const url =
+                `/admin/company/technical/skill/fetch?page=${page}&search=${search}&category_id=${categoryId}&department_ids=${departmentIds}&job_ids=${jobIds}&per_page_dept_${deptId}=${perPage}`;
+
+            fetchDeptPage(tableDiv, url);
+            updateJobdescLabel(wrapper);
+            wrapper.classList.remove('open');
+        }
+
+        function removeJobTag(deptId, jobId) {
+            const wrapper = document.querySelector(`.dept-table[data-dept="${deptId}"]`);
+            if (!wrapper) return;
+
+            const checkbox = wrapper.querySelector(`input[type="checkbox"][value="${jobId}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+            }
+
+            // Re-apply filter
+            applyJobdescFilter(wrapper.querySelector('.jobdesc-wrapper'));
+        }
+
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = date.toLocaleString('default', {
+                month: 'short'
+            });
+            const year = date.getFullYear();
+
+            const hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            const formattedHours = hours % 12 || 12; // 12-hour format, converting 0 to 12 for midnight
+            const time = `${formattedHours}:${minutes} ${ampm}`;
+
+            return `${day} ${month} ${year}, ${time}`; // Format the date as '15 Dec 2025, 6:00 PM'
+        }
+
+        function applyFilter() {
+            console.log("Clicked filter", getSelectedCategoryId());
+
+            const selectedValues = [...checkboxes]
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            const selectedDepartments = [];
+            document.querySelectorAll('#optionsList input[type="checkbox"]:checked').forEach(checkbox => {
+                selectedDepartments.push(checkbox.value);
+            });
+
+            label.textContent = `${selectedDepartments.length} department(s) selected`;
+            toggleDropdown();
+
+            selectedLetter = null;
+            selectedLevel = null;
+            syncSelectedDepartments();
+
+
+            loadTechnicalSkills(getSelectedCategoryId(), 1, selectedLetter, selectedLevel);
+
+            console.log('Top Category ID:', getSelectedCategoryId());
+        }
+    </script>
+    <script>
+        document.getElementById('search-category').addEventListener('input', function() {
+            var query = this.value.toLowerCase();
+            var listItems = document.querySelectorAll('#category-results li');
+
+            listItems.forEach(function(item) {
+                var title = item.querySelector('a').textContent.toLowerCase();
+
+                if (title.indexOf(query) === -1) {
+                    item.style.display = 'none'; // Hide the item
+                } else {
+                    item.style.display = ''; // Show the item
+                }
+            });
+        });
+    </script>
+    <script>
+        function reloadTab(tab) {
+            // Reset all tabs and filters
+            console.log('tabbbbbbbbbbbbbbbbbbbb', tab);
+            const allTabs = document.querySelectorAll('.tab-button');
+            const allFilters = document.querySelectorAll('.bottom-left-filter');
+
+            allTabs.forEach(tabButton => tabButton.classList.remove('active'));
+
+            allFilters.forEach(filter => filter.style.display = 'none');
+
+            const clickedTab = document.querySelector(`.tab-button[onclick*="${tab}"]`);
+            clickedTab.classList.add('active');
+
+            // Show the corresponding filter
+            if (tab != 'joblevel') {
+                const activeFilter = document.querySelector(`.${tab}_filter`);
+                activeFilter.style.display = 'flex';
+                document.getElementById('add-skill-btn').style.display = 'block';
+                document.getElementById('AddJobFamilySKill').style.display = 'none';
+            }
+
+
+            if (tab === 'proficiency' || tab === 'title') {
+                console.log('incondition');
+                document.getElementById('title-proficency').style.display = 'block';
+                document.getElementById('joblevel').style.display = 'none';
+                document.getElementById('master-list-inner').classList.remove('custom-grid-col');
+                document.getElementById('category-col').style.display = 'block';
+                categoryList = document.querySelectorAll('.category-item');
+                categoryList.forEach(item => item.classList.remove('active'));
+
+                const topCategory = categoryList[0]; // First <li> element
+                if (topCategory) {
+                    topCategory.classList.add('active');
+                    topCategory.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    }); // Optional smooth scroll
+                }
+
+                if (tab === 'proficiency') {
+                    selectedLevel = null;
+
+                    document.querySelectorAll('.proficiency_filter .tab-button-bottom').forEach(el => {
+                        el.classList.remove('bg-active');
+                        if (el.textContent.trim() === 'ALL') {
+                            el.classList.add('bg-active');
+                        }
+                    });
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', tab); // Set the 'tab' parameter
+                    window.history.pushState({}, '', url);
+                } else {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', tab); // Set the 'tab' parameter
+                    window.history.pushState({}, '', url);
+                }
+            } else if (tab === 'joblevel') {
+                console.log('elseeeeeeeeee', tab)
+                document.getElementById('title-proficency').style.display = 'none';
+                document.getElementById('joblevel').style.display = 'block';
+                document.getElementById('master-list-inner').classList.add('custom-grid-col');
+                document.getElementById('category-col').style.display = 'none';
+                document.getElementById('add-skill-btn').style.display = 'none';
+                const trackSelect = document.getElementById('track');
+                if (trackSelect.value) {
+                    document.getElementById('AddJobFamilySKill').style.display = 'block';
+
+                }
+                const url = new URL(window.location.href);
+                url.searchParams.set('tab', tab); // Set the 'tab' parameter
+                window.history.pushState({}, '', url);
+
+            }
+
+
+            selectedLetter = null; // Store the selected letter
+            resetSelection()
+            loadTechnicalSkills(null, 1);
+        }
+    </script>
+    <script>
+        function toggleDropdownTable(button) {
+            console.log('buttonsssssssss', button);
+            const menu = button.nextElementSibling;
+            const rect = button.getBoundingClientRect(); // Get the button's position
+
+            document.querySelectorAll('.dropdown-menu').forEach(m => {
+                if (m !== menu) m.style.display = 'none';
+            });
+
+            const spaceBelow = window.innerHeight - rect.bottom; // Calculate the space below the button
+            const spaceAbove = rect.top; // Calculate the space above the button
+
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.actions')) {
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
+            }
+        });
+
+        function filterJobdescOptions(input) {
+            const filter = input.value.toLowerCase();
+            document.querySelectorAll(".options-list label").forEach(label => {
+                const text = label.textContent.toLowerCase();
+                label.style.display = text.includes(filter) ? '' : 'none';
+            });
+        }
+
+        function resetJobdescSelection(wrapper) {
+            const jobdescSelect = wrapper.querySelector('.jobdesc-select');
+            const jobdescDropdown = wrapper.querySelector('.jobdesc-dropdown');
+
+            console.log('jobdescSelect:', jobdescSelect);
+            console.log('jobdescDropdown:', jobdescDropdown);
+
+            if (!jobdescSelect || !jobdescDropdown) {
+                console.error('Error: Job description elements not found');
+                return;
+            }
+
+            const jobdescEl = document.getElementById('jobdesc');
+            if (jobdescEl) {
+                const target = jobdescEl.querySelector('.some-class'); // or whatever you're accessing
+                if (target) {
+                    target.classList.remove('active'); // or other safe access
+                }
+            }
+
+            const jobdescLabel = jobdescSelect.querySelector('.jobdesc-label');
+            if (jobdescLabel) {
+                jobdescLabel.textContent = '0 selected';
+            } else {
+                console.warn('Job description label not found');
+            }
+
+            setTimeout(() => {
+                const checkboxes = jobdescDropdown.querySelectorAll('.options-list input[type="checkbox"]:checked');
+                console.log('checkboxxxxxxxxxxxxxx', checkboxes);
+
+                if (checkboxes.length > 0) {
+                    checkboxes.forEach(checkbox => {
+                        console.log('Unchecking checkbox', checkbox);
+                        checkbox.checked = false; // Uncheck each checkbox
+                    });
+                } else {
+                    console.warn('No checkboxes found in the job description dropdown');
+                }
+                applyJobdescFilter(wrapper);
+
+                wrapper.classList.remove('open');
+            }, 100); // Wait for 100ms to ensure the checkboxes are rendered (you can adjust this delay as needed)
+        }
+
+        function attachResetButtonEventListener() {
+            document.querySelectorAll('.btn-reset').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    const wrapper = button.closest('.jobdesc-wrapper');
+                    resetJobdescSelection(wrapper);
+                });
+            });
+        }
+
+        function debounce(func, delay) {
+            let timer;
+            return function(...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('.edit-skill-btn') || e.target;
+                if (target.classList.contains('edit-skill-btn')) {
+
+                    const skillId = target.getAttribute('data-skill-id');
+                    const skillName = target.getAttribute('data-skill-name');
+                    console.log('asdfasdfasdf', skillName, skillId);
+                    showOverlay();
+
+
+                    fetch(`/admin/company/sector-skills/related-jobs/${skillId}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            hideOverlay();
+                            const jobCount = data.affectedJobs?.length || data.count || 0;
+
+                            ModalManager.open({
+                                module: 'company_skill_library',
+                                key: "edit_technical_skill",
+                                data: {
+                                    jobLevelCount: jobCount,
+                                },
+                                onSubmit(modalEl) {
+                                    const selectedRadio = modalEl.querySelector(
+                                        '.modal-body input[type="radio"]:checked');
+
+                                    if (selectedRadio) {
+                                        const radioValue = selectedRadio
+                                        .value; // Get the value of the selected radio button
+                                        console.log('Radio Value:', radioValue);
+
+                                        if (radioValue === 'duplicate') {
+
+                                            ModalManager.open({
+                                                module: 'company_skill_library',
+                                                key: "duplicate_technical_skill",
+                                                data: {
+                                                    skillName: skillName,
+                                                },
+                                                onSubmit(modalEl1) {
+                                                    const newTitle = document
+                                                        .getElementById('skillInput').value.trim();
+
+                                                    const errorText = document
+                                                        .getElementById(
+                                                            'errorText');
+
+                                                    if (!newTitle) {
+                                                        errorText.style.display =
+                                                            'block';
+                                                        return;
+                                                    }
+
+                                                    errorText.style.display = 'none';
+
+                                                    const currentSkillId = skillId;
+
+                                                    const baseUrl =
+                                                        `/admin/company/sector-skills/duplicate/${skillId}`;
+                                                    const redirectUrl =
+                                                        `${baseUrl}?duplicate=true&new_title=${encodeURIComponent(newTitle)}`;
+                                                    window.location.href = redirectUrl;
+
+                                                }
+                                            });
+
+                                            const bsModal = bootstrap.Modal.getInstance(
+                                            modalEl);
+                                            if (bsModal) bsModal.hide();
+
+                                        } else if (radioValue === 'overwrite') {
+                                            // If the "overwrite" option is selected, redirect the user
+                                            window.location.href =
+                                                `/admin/company/sector-skills/edit/${skillId}`; // Replace with the actual redirect URL
+                                        }
+                                    } else {
+                                        console.log('No radio button selected');
+                                    }
+
+
+
+                                },
+                                onShown(modalEl) {
+                                    const radios = modalEl.querySelectorAll(
+                                        '.modal-body input[type="radio"]');
+                                    const proceedBtn = modalEl.querySelector(
+                                        '#disabledProceedBtn');
+                                    proceedBtn.disabled = true;
+
+                                    radios.forEach(radio => {
+                                        radio.addEventListener('change', () => {
+                                            // Enable/Disable the button based on the selected radio option
+                                            proceedBtn.disabled = !radio
+                                            .checked;
+
+                                            if (radio.checked) {
+                                                proceedBtn.classList.remove(
+                                                    'disable-grey-popup');
+                                            } else {
+                                                proceedBtn.classList.add(
+                                                    'disable-grey-popup');
+                                            }
+                                        });
+                                    });
+
+                                }
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error fetching related jobs:', error);
+                        });
+
+
+
+
+
+                }
+
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+
+            if (tab) {
+                reloadTab(tab);
+                const tabElement = document.getElementById(`tab-${tab}`);
+                if (tabElement) {
+                    tabElement.classList.add("active");
+                    tabElement.click();
+                }
+            } else {
+                //  document.addEventListener('DOMContentLoaded', function() {
+                reloadTab('title');
+                // });
+            }
+        });
+    </script>
+
+
+    <script>
+        document.querySelectorAll('.pencil-table-icon').forEach(icon => {
+            icon.addEventListener('click', function(e) {
+
+                document.querySelectorAll('.pencil-table-icon').forEach(i => i.classList.remove('checked'));
+
+                // Add 'checked' class to the clicked one
+                this.classList.add('checked');
+            });
+        });
+    </script>
+

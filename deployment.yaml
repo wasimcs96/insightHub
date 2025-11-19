@@ -1,0 +1,255 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: insighthub-dev-deployment
+  namespace: default
+  labels:
+    app: insighthub-dev-deployment
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+  selector:
+    matchLabels:
+      app: insighthub-dev-deployment
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: insighthub-dev-deployment
+      annotations:
+        redeploy-timestamp: '1762137166591'
+    spec:
+      securityContext:
+        fsGroup: 101
+      
+      # Pull secrets for private registries
+      imagePullSecrets:
+        - name: cxs-mynext-secret
+        - name: cr-secret
+      
+      # Init container to prepare vendor and directories
+      initContainers:
+        - name: ensure-vendor
+          image: cxs-mynext-registry-vpc.ap-southeast-3.cr.aliyuncs.com/mynext-dev-2025/insighthub-dev:latest
+          imagePullPolicy: Always
+          command: ["/bin/sh", "-lc"]
+          args:
+            - |
+              set -e
+              cd /usr/share/nginx/html
+              mkdir -p storage/framework/{cache,data,sessions,views}
+              mkdir -p storage/logs bootstrap/cache
+              touch storage/logs/laravel.log || true
+              rm -f bootstrap/cache/{config.php,packages.php,services.php,routes-*.php} || true
+              if [ -f composer.lock ] && [ ! -f vendor/autoload.php ]; then
+                composer install --no-dev --prefer-dist --no-interaction --no-progress
+              fi
+              chown -R nginx:nginx storage bootstrap/cache
+              chmod -R ug+rwX storage bootstrap/cache
+          env:
+            - name: COMPOSER_ALLOW_SUPERUSER
+              value: '1'
+          volumeMounts:
+            - name: storage
+              mountPath: /usr/share/nginx/html/storage
+            - name: cache
+              mountPath: /usr/share/nginx/html/bootstrap/cache
+            - name: sessions
+              mountPath: /usr/share/nginx/html/storage/framework/sessions
+            - name: views
+              mountPath: /usr/share/nginx/html/storage/framework/views
+      
+      # Main application container
+      containers:
+        - name: insighthub-dev-deployment
+          image: cxs-mynext-registry-vpc.ap-southeast-3.cr.aliyuncs.com/mynext-dev-2025/insighthub-dev:latest
+          imagePullPolicy: Always
+          
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          
+          # Resource requests
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          
+          # Health checks
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 6
+            successThreshold: 1
+          
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+            successThreshold: 1
+          
+          # Environment variables from secrets
+          env:
+            - name: VIEW_COMPILED_PATH
+              value: /usr/share/nginx/html/storage/framework/views
+            
+            # Core Laravel Settings
+            - name: APP_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: APP_NAME
+            - name: APP_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: APP_ENV
+            - name: APP_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: APP_KEY
+            - name: APP_DEBUG
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: APP_DEBUG
+            - name: APP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: APP_URL
+            - name: LOG_CHANNEL
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: LOG_CHANNEL
+            
+            # Database Configuration
+            - name: DB_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: DB_CONNECTION
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: DB_PORT
+            - name: DB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: DB_DATABASE
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: DB_PASSWORD
+            
+            # Mail Configuration
+            - name: MAIL_MAILER
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: MAIL_MAILER
+            - name: MAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: MAIL_HOST
+            - name: MAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: MAIL_PORT
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: MAIL_USERNAME
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: MAIL_PASSWORD
+            - name: MAIL_ENCRYPTION
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: MAIL_ENCRYPTION
+            - name: MAIL_FROM_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: MAIL_FROM_ADDRESS
+            - name: MAIL_FROM_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: insighthub-dev-env
+                  key: MAIL_FROM_NAME
+            
+            # Add other environment variables as needed from your secret
+            # You can reference the full list from your original deployment
+          
+          # Volume mounts
+          volumeMounts:
+            - name: storage
+              mountPath: /usr/share/nginx/html/storage
+            - name: cache
+              mountPath: /usr/share/nginx/html/bootstrap/cache
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+            - name: php-fpm-pool
+              mountPath: /etc/php/8.3/fpm/pool.d/www.conf
+              subPath: www.conf
+      
+      # Volumes
+      volumes:
+        - name: storage
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+        - name: sessions
+          emptyDir: {}
+        - name: views
+          emptyDir: {}
+        - name: nginx-conf
+          configMap:
+            name: insighthub-dev-web-config
+            items:
+              - key: default.conf
+                path: default.conf
+        - name: php-fpm-pool
+          configMap:
+            name: insighthub-dev-web-config
+            items:
+              - key: www.conf
+                path: www.conf

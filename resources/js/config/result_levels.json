@@ -1,0 +1,14 @@
+[
+  { "id": 1, "label": "Very High", "icon": "tdesign:forward-filled", "iconClass": "icon-green rotate-minus-90", "assessmentTypeIds": [1, 2, 3, 4, 5,9, 10] },
+  { "id": 2, "label": "High", "icon": "mdi:triangle", "iconClass": "icon-green", "assessmentTypeIds": [1, 2, 3, 4, 5, 8,9, 10] },
+  { "id": 3, "label": "Moderate", "icon": "material-symbols-light:square", "iconClass": "icon-yellow", "assessmentTypeIds": [1, 2, 3, 4, 5, 8,9, 10] },
+  { "id": 4, "label": "Low", "icon": "mdi:triangle-down", "iconClass": "icon-red", "assessmentTypeIds": [1, 2, 3, 4, 5, 8,9, 10] },
+  { "id": 5, "label": "Very Low", "icon": "tdesign:forward-filled", "iconClass": "icon-red rotate-90", "assessmentTypeIds": [1, 2, 3, 4, 5,9, 10] },
+  { "id": 6, "label": "Very High Risk", "icon": "tdesign:forward-filled", "iconClass": "icon-red rotate-minus-90", "assessmentTypeIds": [6, 7] },
+  { "id": 7, "label": "High Risk", "icon": "mdi:triangle", "iconClass": "icon-red", "assessmentTypeIds": [6, 7] },
+  { "id": 8, "label": "Moderate Risk", "icon": "material-symbols-light:square", "iconClass": "icon-yellow", "assessmentTypeIds": [6, 7] },
+  { "id": 9, "label": "Low Risk", "icon": "mdi:triangle-down", "iconClass": "icon-green", "assessmentTypeIds": [6, 7] },
+  { "id": 10, "label": "Very Low Risk", "icon": "tdesign:forward-filled", "iconClass": "icon-green rotate-90", "assessmentTypeIds": [6, 7] }
+]
+
+

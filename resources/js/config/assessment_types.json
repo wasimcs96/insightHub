@@ -1,0 +1,16 @@
+[
+  { "id": 1, "label": "Overall Match Rate", "icon": "material-symbols-light:target" },
+  { "id": 2, "label": "Behavioral Fit Rate", "icon": "material-symbols-light:psychology-outline-rounded" },
+  { "id": 3, "label": "Job Match Rate", "icon": "material-symbols-light:work-outline" },
+  { "id": 4, "label": "Soft Skill Match Rate", "icon": "material-symbols-light:emoji-objects-outline-rounded" },
+  { "id": 5, "label": "Growth Potential", "icon": "carbon:growth" },
+  { "id": 6, "label": "Workplace Alignment Forecast", "icon": "fluent:building-20-regular" },
+  { "id": 7, "label": "Flight Risk", "icon": "carbon:plane" },
+  { "id": 8, "label": "Cognitive Ability Test", "icon": "fluent-emoji-high-contrast:brain" },
+  { "id": 9, "label": "Technical Skill Match Rate", "icon": "fluent:wrench-settings-20-regular" },
+  { "id": 10, "label": "Leadership Potential", "icon": "fluent-mdl2:party-leader" }
+]
+
+
+
+
