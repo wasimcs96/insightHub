@@ -1121,8 +1121,11 @@ if (env('APP_ENV') != 'production') {
 // });
 
 // Tenant Provisioning Routes
-Route::prefix('tenant-provisioning')->name('tenant.provisioning.')->group(function () {
-    Route::post('/', [App\Http\Controllers\Admin\TenantProvisioningController::class, 'provision'])->name('provision');
-    Route::get('/plans', [App\Http\Controllers\Admin\TenantProvisioningController::class, 'getAvailablePlans'])->name('plans');
-    Route::get('/parent-tenants', [App\Http\Controllers\Admin\TenantProvisioningController::class, 'getParentTenants'])->name('parent-tenants');
-});
+Route::prefix('tenant-provisioning')
+    ->name('tenant.provisioning.')
+    ->middleware(['auth', 'isadmin', 'throttle:10,1']) // Rate limit: 10 requests per minute
+    ->group(function () {
+        Route::post('/', [App\Http\Controllers\Admin\TenantProvisioningController::class, 'provision'])->name('provision');
+        Route::get('/plans', [App\Http\Controllers\Admin\TenantProvisioningController::class, 'getAvailablePlans'])->name('plans');
+        Route::get('/parent-tenants', [App\Http\Controllers\Admin\TenantProvisioningController::class, 'getParentTenants'])->name('parent-tenants');
+    });
