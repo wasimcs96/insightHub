@@ -17,9 +17,15 @@ class Tenant extends Model
         'email',
         'domain',
         'subdomain',
+        'country',
+        'address',
+        'industry',
+        'contact_person_name',
+        'mobile_number',
         'settings',
         'status',
         'trial_ends_at',
+        'parent_tenant_id',
     ];
 
     protected $casts = [
@@ -50,5 +56,54 @@ class Tenant extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
+
+    /**
+     * Get the parent tenant (if this is a subsidiary)
+     */
+    public function parent()
+    {
+        return $this->belongsTo(Tenant::class, 'parent_tenant_id');
+    }
+
+    /**
+     * Get all subsidiary tenants
+     */
+    public function subsidiaries()
+    {
+        return $this->hasMany(Tenant::class, 'parent_tenant_id');
+    }
+
+    /**
+     * Get the plans associated with this tenant
+     */
+    public function plans()
+    {
+        return $this->belongsToMany(Plan::class, 'tenant_plans')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the roles associated with this tenant
+     */
+    public function roles()
+    {
+        return $this->hasMany(Role::class);
+    }
+
+    /**
+     * Check if tenant is a parent company
+     */
+    public function isParent(): bool
+    {
+        return $this->subsidiaries()->count() > 0;
+    }
+
+    /**
+     * Check if tenant is a subsidiary
+     */
+    public function isSubsidiary(): bool
+    {
+        return !is_null($this->parent_tenant_id);
     }
 }

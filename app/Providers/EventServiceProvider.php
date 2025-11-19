@@ -33,6 +33,10 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\TenantSwitched::class => [
             \App\Listeners\LogTenantActivity::class,
         ],
+        
+        \App\Events\TenantProvisioned::class => [
+            \App\Listeners\SendTenantProvisionedNotification::class,
+        ],
     ];
 
     /**
